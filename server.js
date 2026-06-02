@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 3000;
 const ADZUNA_APP_ID = 'cd82aca8';
 const ADZUNA_API_KEY = '39952eab2d2de243ff1ceffc7dc36478';
 const RAPIDAPI_KEY = '96a9c08353msh17930481ae22721p150e24jsn49eed442acdc';
-const YOUR_WHATSAPP = '+256 776 686 096; // CHANGE THIS TO YOUR NUMBER
+const YOUR_WHATSAPP = '+256 776 686 096'; // CHANGE THIS TO YOUR NUMBER
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
