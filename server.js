@@ -53,208 +53,89 @@ pool.query(`
     country TEXT NOT NULL,
     salary TEXT,
     category TEXT,
-    url TEXT NOT NULL,
+    url TEXT NOT NULL UNIQUE,
     status TEXT DEFAULT 'active',
     created_at TIMESTAMP DEFAULT NOW()
   )
 `).catch(console.error);
 
-// VERIFIED HIGH-PAYING JOBS ACROSS THE WORLD
+// VERIFIED HIGH-PAYING JOBS - FALLBACK IF API FAILS
 const AGENCY_JOBS = [
-  // HIGH SALARY JOBS - USA
-  {
-    title: "Registered Nurse - H1B Sponsorship",
-    company: "Mayo Clinic",
-    location: "Rochester, USA",
-    salary: "$85,000 - $110,000 + Relocation",
-    url: "https://jobs.mayoclinic.org/search-jobs/nursing",
-    country: "USA",
-    category: "Healthcare",
-    date_posted: new Date().toISOString()
-  },
-  {
-    title: "Software Engineer - H1B Visa",
-    company: "Amazon",
-    location: "Seattle, USA",
-    salary: "$130,000 - $180,000 + Stock",
-    url: "https://www.amazon.jobs/en/search?base_query=software+engineer",
-    country: "USA",
-    category: "Technology",
-    date_posted: new Date().toISOString()
-  },
-  {
-    title: "Truck Driver - CDL Sponsorship",
-    company: "Swift Transportation",
-    location: "Texas, USA",
-    salary: "$70,000 - $95,000 + Benefits",
-    url: "https://www.swifttrans.com/careers",
-    country: "USA",
-    category: "Transport",
-    date_posted: new Date().toISOString()
-  },
-
-  // HIGH SALARY JOBS - CANADA
-  {
-    title: "Senior Caregiver - PR Pathway",
-    company: "Government of Canada",
-    location: "Toronto, Canada",
-    salary: "CAD $55,000 + PR in 2 Years",
-    url: "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/caregivers.html",
-    country: "Canada",
-    category: "Healthcare",
-    date_posted: new Date().toISOString()
-  },
-  {
-    title: "Heavy Equipment Operator - LMIA",
-    company: "Suncor Energy",
-    location: "Alberta, Canada",
-    salary: "CAD $95,000 + Housing",
-    url: "https://www.suncor.com/en-ca/careers",
-    country: "Canada",
-    category: "Construction",
-    date_posted: new Date().toISOString()
-  },
-  {
-    title: "IT Project Manager - Express Entry",
-    company: "RBC Bank",
-    location: "Toronto, Canada",
-    salary: "CAD $100,000 - $140,000",
-    url: "https://jobs.rbc.com/ca/en/search-results",
-    country: "Canada",
-    category: "Technology",
-    date_posted: new Date().toISOString()
-  },
-
-  // HIGH SALARY JOBS - UK
-  {
-    title: "Senior Health Care Assistant - Visa Sponsorship",
-    company: "NHS UK",
-    location: "London, UK",
-    salary: "£28,000 - £35,000 + NHS Benefits",
-    url: "https://www.jobs.nhs.uk/candidate/search/results?language=en&searchFormType=main&keywords=healthcare+assistant&location=&distance=5",
-    country: "UK",
-    category: "Healthcare",
-    date_posted: new Date().toISOString()
-  },
-  {
-    title: "Senior Chef - Skilled Worker Visa",
-    company: "Marriott Hotels UK",
-    location: "Manchester, UK",
-    salary: "£32,000 - £45,000 + Accommodation",
-    url: "https://careers.marriott.com/en",
-    country: "UK",
-    category: "Hospitality",
-    date_posted: new Date().toISOString()
-  },
-
-  // HIGH SALARY JOBS - UAE
-  {
-    title: "Executive Housekeeper - Dubai Hotels",
-    company: "Emirates Group",
-    location: "Dubai, UAE",
-    salary: "AED 8,000 - 12,000 + Visa + Housing",
-    url: "https://www.emiratesgroupcareers.com/search/?searchby=location&createNewAlert=false&q=housekeeper&locationsearch=dubai",
-    country: "UAE",
-    category: "Hospitality",
-    date_posted: new Date().toISOString()
-  },
-  {
-    title: "Security Manager - SIRA License",
-    company: "G4S UAE",
-    location: "Abu Dhabi, UAE",
-    salary: "AED 10,000 - 15,000 + Benefits",
-    url: "https://careers.g4s.com/en/search-results?keywords=manager&location=UAE",
-    country: "UAE",
-    category: "Security",
-    date_posted: new Date().toISOString()
-  },
-  {
-    title: "Construction Project Manager - NEOM",
-    company: "Saudi Binladin Group",
-    location: "Riyadh, Saudi Arabia",
-    salary: "SAR 25,000 - 35,000 + Housing",
-    url: "https://careers.sbg.com.sa/",
-    country: "Saudi Arabia",
-    category: "Construction",
-    date_posted: new Date().toISOString()
-  },
-
-  // HIGH SALARY JOBS - GERMANY
-  {
-    title: "Nurse - EU Blue Card Germany",
-    company: "Charité Hospital Berlin",
-    location: "Berlin, Germany",
-    salary: "€50,000 - €65,000 + Benefits",
-    url: "https://www.charite.de/en/career/",
-    country: "Germany",
-    category: "Healthcare",
-    date_posted: new Date().toISOString()
-  },
-  {
-    title: "Mechanical Engineer - Blue Card",
-    company: "BMW Group",
-    location: "Munich, Germany",
-    salary: "€70,000 - €95,000",
-    url: "https://www.bmwgroup.jobs/de/en.html",
-    country: "Germany",
-    category: "Engineering",
-    date_posted: new Date().toISOString()
-  },
-
-  // HIGH SALARY JOBS - AUSTRALIA
-  {
-    title: "Aged Care Nurse - 482 Visa Sponsorship",
-    company: "Bupa Australia",
-    location: "Sydney, Australia",
-    salary: "AUD $80,000 - $100,000 + Relocation",
-    url: "https://careers.bupa.com.au/en",
-    country: "Australia",
-    category: "Healthcare",
-    date_posted: new Date().toISOString()
-  },
-  {
-    title: "Mining Supervisor - 186 Visa",
-    company: "Rio Tinto",
-    location: "Perth, Australia",
-    salary: "AUD $150,000 - $180,000 + FIFO",
-    url: "https://www.riotinto.com/careers",
-    country: "Australia",
-    category: "Mining",
-    date_posted: new Date().toISOString()
-  },
-
-  // ENTRY LEVEL WITH GROWTH
-  {
-    title: "Housekeeping Staff - Dubai Hotels",
-    company: "Emirates Group",
-    location: "Dubai, UAE",
-    salary: "2000 AED + Visa + Accommodation",
-    url: "https://www.emiratesgroupcareers.com/search/?searchby=location&createNewAlert=false&q=&locationsearch=dubai",
-    country: "UAE",
-    category: "Hospitality",
-    date_posted: new Date().toISOString()
-  },
-  {
-    title: "Security Guard - SIRA License Provided",
-    company: "G4S UAE",
-    location: "Dubai, UAE",
-    salary: "2500 AED + Benefits",
-    url: "https://careers.g4s.com/en/search-results?keywords=&location=Dubai",
-    country: "UAE",
-    category: "Security",
-    date_posted: new Date().toISOString()
-  },
-  {
-    title: "Farm Worker - LMIA Approved",
-    company: "Job Bank Canada",
-    location: "Ontario, Canada",
-    salary: "CAD 15/hr + Accommodation",
-    url: "https://www.jobbank.gc.ca/jobsearch/jobsearch?searchstring=farm+worker&locationstring=Canada",
-    country: "Canada",
-    category: "Agriculture",
-    date_posted: new Date().toISOString()
-  }
+  { title: "Registered Nurse - H1B Sponsorship", company: "Mayo Clinic", location: "Rochester, USA", salary: "$85,000 - $110,000 + Relocation", url: "https://jobs.mayoclinic.org/search-jobs/nursing", country: "USA", category: "Healthcare" },
+  { title: "Software Engineer - H1B Visa", company: "Amazon", location: "Seattle, USA", salary: "$130,000 - $180,000 + Stock", url: "https://www.amazon.jobs/en/search?base_query=software+engineer", country: "USA", category: "Technology" },
+  { title: "Truck Driver - CDL Sponsorship", company: "Swift Transportation", location: "Texas, USA", salary: "$70,000 - $95,000 + Benefits", url: "https://www.swifttrans.com/careers", country: "USA", category: "Transport" },
+  { title: "Senior Caregiver - PR Pathway", company: "Government of Canada", location: "Toronto, Canada", salary: "CAD $55,000 + PR in 2 Years", url: "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/caregivers.html", country: "Canada", category: "Healthcare" },
+  { title: "Heavy Equipment Operator - LMIA", company: "Suncor Energy", location: "Alberta, Canada", salary: "CAD $95,000 + Housing", url: "https://www.suncor.com/en-ca/careers", country: "Canada", category: "Construction" },
+  { title: "IT Project Manager - Express Entry", company: "RBC Bank", location: "Toronto, Canada", salary: "CAD $100,000 - $140,000", url: "https://jobs.rbc.com/ca/en/search-results", country: "Canada", category: "Technology" },
+  { title: "Senior Health Care Assistant - Visa Sponsorship", company: "NHS UK", location: "London, UK", salary: "£28,000 - £35,000 + NHS Benefits", url: "https://www.jobs.nhs.uk/candidate/search/results?language=en&searchFormType=main&keywords=healthcare+assistant", country: "UK", category: "Healthcare" },
+  { title: "Senior Chef - Skilled Worker Visa", company: "Marriott Hotels UK", location: "Manchester, UK", salary: "£32,000 - £45,000 + Accommodation", url: "https://careers.marriott.com/en", country: "UK", category: "Hospitality" },
+  { title: "Executive Housekeeper - Dubai Hotels", company: "Emirates Group", location: "Dubai, UAE", salary: "AED 8,000 - 12,000 + Visa + Housing", url: "https://www.emiratesgroupcareers.com/search/?q=housekeeper", country: "UAE", category: "Hospitality" },
+  { title: "Security Manager - SIRA License", company: "G4S UAE", location: "Abu Dhabi, UAE", salary: "AED 10,000 - 15,000 + Benefits", url: "https://careers.g4s.com/en/search-results?keywords=manager", country: "UAE", category: "Security" },
+  { title: "Construction Project Manager - NEOM", company: "Saudi Binladin Group", location: "Riyadh, Saudi Arabia", salary: "SAR 25,000 - 35,000 + Housing", url: "https://careers.sbg.com.sa/", country: "Saudi Arabia", category: "Construction" },
+  { title: "Nurse - EU Blue Card Germany", company: "Charité Hospital Berlin", location: "Berlin, Germany", salary: "€50,000 - €65,000 + Benefits", url: "https://www.charite.de/en/career/", country: "Germany", category: "Healthcare" },
+  { title: "Mechanical Engineer - Blue Card", company: "BMW Group", location: "Munich, Germany", salary: "€70,000 - €95,000", url: "https://www.bmwgroup.jobs/de/en.html", country: "Germany", category: "Engineering" },
+  { title: "Aged Care Nurse - 482 Visa Sponsorship", company: "Bupa Australia", location: "Sydney, Australia", salary: "AUD $80,000 - $100,000 + Relocation", url: "https://careers.bupa.com.au/en", country: "Australia", category: "Healthcare" },
+  { title: "Mining Supervisor - 186 Visa", company: "Rio Tinto", location: "Perth, Australia", salary: "AUD $150,000 - $180,000 + FIFO", url: "https://www.riotinto.com/careers", country: "Australia", category: "Mining" },
+  { title: "Housekeeping Staff - Dubai Hotels", company: "Emirates Group", location: "Dubai, UAE", salary: "2000 AED + Visa + Accommodation", url: "https://www.emiratesgroupcareers.com/search/?q=housekeeping", country: "UAE", category: "Hospitality" },
+  { title: "Security Guard - SIRA License Provided", company: "G4S UAE", location: "Dubai, UAE", salary: "2500 AED + Benefits", url: "https://careers.g4s.com/en/search-results?keywords=guard", country: "UAE", category: "Security" },
+  { title: "Farm Worker - LMIA Approved", company: "Job Bank Canada", location: "Ontario, Canada", salary: "CAD 15/hr + Accommodation", url: "https://www.jobbank.gc.ca/jobsearch/jobsearch?searchstring=farm+worker", country: "Canada", category: "Agriculture" }
 ];
+
+// AUTO-FETCH NEW JOBS DAILY FROM ADZUNA
+async function fetchDailyJobs() {
+  console.log('Starting daily job fetch...');
+  const countries = [
+    { code: 'us', name: 'USA' },
+    { code: 'ca', name: 'Canada' },
+    { code: 'gb', name: 'UK' },
+    { code: 'ae', name: 'UAE' },
+    { code: 'de', name: 'Germany' },
+    { code: 'au', name: 'Australia' }
+  ];
+
+  const keywords = ['nurse', 'software engineer', 'truck driver', 'chef', 'security', 'construction', 'caregiver', 'engineer', 'manager', 'driver'];
+  let totalAdded = 0;
+
+  for (const country of countries) {
+    for (const keyword of keywords) {
+      try {
+        const url = `https://api.adzuna.com/v1/api/jobs/${country.code}/search/1?app_id=${ADZUNA_APP_ID}&app_key=${ADZUNA_API_KEY}&results_per_page=5&what=${encodeURIComponent(keyword)}&sort_by=date&max_days_old=1`;
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (data.results) {
+          for (const job of data.results) {
+            try {
+              await pool.query(
+                `INSERT INTO agency_jobs (title, company, location, country, salary, category, url)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+                [
+                  job.title,
+                  job.company?.display_name || 'Confidential',
+                  job.location?.display_name || country.name,
+                  country.name,
+                  job.salary_max? `${job.salary_min}-${job.salary_max} ${job.salary_is_predicted? '(est)' : ''}` : 'Competitive',
+                  job.category?.label || 'General',
+                  job.redirect_url
+                ]
+              );
+              totalAdded++;
+            } catch (insertErr) {
+              // Ignore duplicates
+            }
+          }
+        }
+      } catch (err) {
+        console.log(`Failed ${country.name} ${keyword}:`, err.message);
+      }
+    }
+  }
+  console.log(`Daily job fetch complete. Added ${totalAdded} new jobs.`);
+}
+
+// RUN ONCE AT STARTUP + EVERY 24 HOURS
+fetchDailyJobs();
+setInterval(fetchDailyJobs, 24 * 60 * 60 * 1000);
 
 function requireLogin(req, res, next) {
   if (req.session.userId) {
@@ -457,7 +338,7 @@ app.get('/jobs', requireLogin, async (req, res) => {
     ' async function loadJobs() {' +
     ' const res = await fetch("/api/jobs");' +
     ' const dbJobs = await res.json();' +
-    ' allJobs = [...allJobs,...dbJobs];' +
+    ' allJobs = [...dbJobs,...allJobs];' +
     ' renderJobs(allJobs);' +
     ' }' +
     ' function renderJobs(jobs) {' +
@@ -503,7 +384,7 @@ app.get('/jobs', requireLogin, async (req, res) => {
 
 app.get('/api/jobs', requireLogin, async (req, res) => {
   try {
-    const result = await pool.query(`SELECT * FROM agency_jobs WHERE status = 'active' ORDER BY created_at DESC`);
+    const result = await pool.query(`SELECT * FROM agency_jobs WHERE status = 'active' ORDER BY created_at DESC LIMIT 500`);
     res.json(result.rows);
   } catch (err) {
     res.json([]);
@@ -514,9 +395,9 @@ app.post('/api/register', async (req, res) => {
   const { firstName, lastName, email, phone, password, skills, country_interest } = req.body;
   if (password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
   try {
-        const hash = await bcrypt.hash(password, 10);
+    const hash = await bcrypt.hash(password, 10);
     const result = await pool.query(
-      `INSERT INTO candidates (first_name, last_name, email, phone, password_hash, skills, country_interest) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
+            `INSERT INTO candidates (first_name, last_name, email, phone, password_hash, skills, country_interest) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
       [firstName, lastName, email, phone, hash, skills, country_interest]
     );
     req.session.userId = result.rows[0].id;
