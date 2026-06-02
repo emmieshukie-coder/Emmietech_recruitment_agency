@@ -53,11 +53,16 @@ pool.query(`
     country TEXT NOT NULL,
     salary TEXT,
     category TEXT,
-    url TEXT NOT NULL UNIQUE,
+    url TEXT NOT NULL,
     status TEXT DEFAULT 'active',
     created_at TIMESTAMP DEFAULT NOW()
   )
 `).catch(console.error);
+
+// Add unique constraint to prevent duplicate jobs by URL
+pool.query(`ALTER TABLE agency_jobs ADD CONSTRAINT unique_job_url UNIQUE (url)`).catch(e => {
+  console.log('Constraint exists or table empty:', e.message);
+});
 
 // VERIFIED HIGH-PAYING JOBS - FALLBACK IF API FAILS
 const AGENCY_JOBS = [
@@ -341,6 +346,18 @@ app.get('/jobs', requireLogin, async (req, res) => {
     ' allJobs = [...dbJobs,...allJobs];' +
     ' renderJobs(allJobs);' +
     ' }' +
+    ' function timeAgo(date) {' +
+    ' if (!date) return "Just now";' +
+    ' const seconds = Math.floor((new Date() - new Date(date)) / 1000);' +
+    ' if (seconds < 60) return "Just now";' +
+    ' const minutes = Math.floor(seconds / 60);' +
+    ' if (minutes < 60) return `${minutes}m ago`;' +
+    ' const hours = Math.floor(minutes / 60);' +
+    ' if (hours < 24) return `${hours}h ago`;' +
+    ' const days = Math.floor(hours / 24);' +
+    ' if (days < 7) return `${days}d ago`;' +
+    ' return new Date(date).toLocaleDateString();' +
+    ' }' +
     ' function renderJobs(jobs) {' +
     ' document.getElementById("jobGrid").innerHTML = jobs.map((j, index) => {' +
     ' const isHighPay = j.salary.includes("$") || j.salary.includes("€") || j.salary.includes("AUD") || j.salary.includes("SAR 2") || j.salary.includes("AED 8") || j.salary.includes("AED 10");' +
@@ -355,7 +372,7 @@ app.get('/jobs', requireLogin, async (req, res) => {
     ' ${highPayBadge}' +
     ' <span class="country-badge">${j.country}</span>' +
     ' <h3>${j.title}</h3>' +
-    ' <p class="job-meta">${j.company} • ${j.location}</p>' +
+    ' <p class="job-meta">${j.company} • ${j.location} • ${timeAgo(j.created_at)}</p>' +
     ' <p class="job-salary">${j.salary || "Competitive"}</p>' +
     ' <a href="${j.url}" target="_blank" class="apply-btn">Apply via Employer Site</a>' +
     ' <a href="https://wa.me/${WHATSAPP.replace(/[^0-9]/g,"")}?text=Hi, I want to apply for: ${encodeURIComponent(j.title)} at ${encodeURIComponent(j.company)}" target="_blank" class="apply-btn whatsapp-btn">Chat on WhatsApp</a>' +
@@ -384,7 +401,7 @@ app.get('/jobs', requireLogin, async (req, res) => {
 
 app.get('/api/jobs', requireLogin, async (req, res) => {
   try {
-    const result = await pool.query(`SELECT * FROM agency_jobs WHERE status = 'active' ORDER BY created_at DESC LIMIT 500`);
+        const result = await pool.query(`SELECT * FROM agency_jobs WHERE status = 'active' ORDER BY created_at DESC LIMIT 500`);
     res.json(result.rows);
   } catch (err) {
     res.json([]);
@@ -397,7 +414,7 @@ app.post('/api/register', async (req, res) => {
   try {
     const hash = await bcrypt.hash(password, 10);
     const result = await pool.query(
-            `INSERT INTO candidates (first_name, last_name, email, phone, password_hash, skills, country_interest) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
+      `INSERT INTO candidates (first_name, last_name, email, phone, password_hash, skills, country_interest) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
       [firstName, lastName, email, phone, hash, skills, country_interest]
     );
     req.session.userId = result.rows[0].id;
