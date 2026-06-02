@@ -10,7 +10,9 @@ const PORT = process.env.PORT || 3000;
 const ADZUNA_APP_ID = 'cd82aca8';
 const ADZUNA_API_KEY = '39952eab2d2de243ff1ceffc7dc36478';
 const RAPIDAPI_KEY = '96a9c08353msh17930481ae22721p150e24jsn49eed442acdc';
-const YOUR_WHATSAPP = '+256 776 686 096'; // CHANGE THIS TO YOUR NUMBER
+const YOUR_WHATSAPP = '+256 776 686 096';
+const ADSENSE_PUBLISHER_ID = 'ca-pub-1637256996790764'; // YOUR REAL ID
+const ADSENSE_SLOT_ID = '1234567890'; // CREATE AD UNIT NEXT TO GET THIS
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -47,7 +49,6 @@ pool.query(`
   )
 `).catch(console.error);
 
-// REAL VERIFIED JOBS - EDIT THESE
 const AGENCY_JOBS = [
   { 
     title: "Housekeeping Staff - Dubai Hotels", 
@@ -123,6 +124,7 @@ app.get('/', (req, res) => {
     ' <meta charset="UTF-8">' +
     ' <meta name="viewport" content="width=device-width, initial-scale=1.0">' +
     ' <title>EmmieTech Global Recruitment Agency - Uganda to UAE, Canada, UK</title>' +
+    ' <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + ADSENSE_PUBLISHER_ID + '" crossorigin="anonymous"></script>' +
     ' <style>' +
     ' body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; margin: 0; padding: 0; background: #f8f9fa; color: #202124; }' +
     '.header { background: #fff; border-bottom: 1px solid #dadce0; padding: 16px 24px; position: sticky; top: 0; z-index: 100; }' +
@@ -151,6 +153,7 @@ app.get('/', (req, res) => {
     '.stat-card h4 { margin: 0 0 8px 0; font-size: 32px; color: #1a73e8; }' +
     '.stat-card p { margin: 0; color: #5f6368; }' +
     '.footer { background: #202124; color: #e8eaed; padding: 40px 20px; margin-top: 60px; text-align: center; }' +
+    '.ad-container { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); text-align: center; min-height: 280px; }' +
     ' </style>' +
     '</head>' +
     '<body>' +
@@ -185,6 +188,8 @@ app.get('/', (req, res) => {
     ' </div>' +
     ' <script>' +
     ' const WHATSAPP = "' + YOUR_WHATSAPP + '";' +
+    ' const ADSENSE_CLIENT = "' + ADSENSE_PUBLISHER_ID + '";' +
+    ' const ADSENSE_SLOT = "' + ADSENSE_SLOT_ID + '";' +
     ' let allJobs = ' + JSON.stringify(AGENCY_JOBS) + ';' +
     ' async function loadJobs() {' +
     '   const res = await fetch("/api/jobs");' +
@@ -193,15 +198,22 @@ app.get('/', (req, res) => {
     '   renderJobs(allJobs);' +
     ' }' +
     ' function renderJobs(jobs) {' +
-    ' document.getElementById("jobGrid").innerHTML = jobs.map(j => `' +
-    ' <div class="job-card">' +
-    ' <span class="country-badge">${j.country}</span>' +
-    ' <h3>${j.title}</h3>' +
-    ' <p class="job-meta">${j.company} • ${j.location}</p>' +
-    ' <p class="job-salary">${j.salary || "Competitive"}</p>' +
-    ' <a href="${j.url}" target="_blank" class="apply-btn">Apply via Employer Site</a>' +
-    ' <a href="https://wa.me/${WHATSAPP.replace(/[^0-9]/g,"")}?text=Hi, I want to apply for: ${encodeURIComponent(j.title)} at ${encodeURIComponent(j.company)}" target="_blank" class="apply-btn whatsapp-btn">Chat on WhatsApp</a>' +
-    ' </div>`).join("");' +
+    ' document.getElementById("jobGrid").innerHTML = jobs.map((j, index) => {' +
+    '   const adCode = index === 2 && ADSENSE_SLOT !== "1234567890" ? `' +
+    '   <div class="ad-container">' +
+    '     <ins class="adsbygoogle" style="display:block" data-ad-client="${ADSENSE_CLIENT}" data-ad-slot="${ADSENSE_SLOT}" data-ad-format="auto" data-full-width-responsive="true"></ins>' +
+    '     <script>(adsbygoogle = window.adsbygoogle || []).push({});<\/script>' +
+    '   </div>` : "";' +
+    '   return `' +
+    '   <div class="job-card">' +
+    '   <span class="country-badge">${j.country}</span>' +
+    '   <h3>${j.title}</h3>' +
+    '   <p class="job-meta">${j.company} • ${j.location}</p>' +
+    '   <p class="job-salary">${j.salary || "Competitive"}</p>' +
+    '   <a href="${j.url}" target="_blank" class="apply-btn">Apply via Employer Site</a>' +
+    '   <a href="https://wa.me/${WHATSAPP.replace(/[^0-9]/g,"")}?text=Hi, I want to apply for: ${encodeURIComponent(j.title)} at ${encodeURIComponent(j.company)}" target="_blank" class="apply-btn whatsapp-btn">Chat on WhatsApp</a>' +
+    '   </div>${adCode}`;' +
+    ' }).join("");' +
     ' }' +
     ' function filterJobs() {' +
     ' const country = document.getElementById("countryFilter").value;' +
@@ -223,7 +235,6 @@ app.get('/', (req, res) => {
   );
 });
 
-// API ROUTES
 app.get('/api/jobs', async (req, res) => {
   try {
     const result = await pool.query(`SELECT * FROM agency_jobs WHERE status = 'active' ORDER BY created_at DESC`);
