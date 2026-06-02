@@ -13,7 +13,7 @@ const ADZUNA_API_KEY = '39952eab2d2de243ff1ceffc7dc36478';
 const RAPIDAPI_KEY = '96a9c08353msh17930481ae22721p150e24jsn49eed442acdc';
 const YOUR_WHATSAPP = '+256 776 686 096';
 const ADSENSE_PUBLISHER_ID = 'ca-pub-1637256996790764';
-const ADSENSE_SLOT_ID = '1234567890'; // REPLACE AFTER YOU CREATE AD UNIT
+const ADSENSE_SLOT_ID = '1234567890';
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -26,7 +26,7 @@ app.use(session({
   secret: 'emmietech-recruitment-2026-secret',
   resave: false,
   saveUninitialized: false,
-  cookie: { maxAge: 30 * 24 * 60 * 60 * 1000 } // 30 days
+  cookie: { maxAge: 30 * 24 * 60 * 60 * 1000 }
 }));
 
 pool.query(`
@@ -122,7 +122,6 @@ const AGENCY_JOBS = [
   }
 ];
 
-// AUTH MIDDLEWARE
 function requireLogin(req, res, next) {
   if (req.session.userId) {
     next();
@@ -161,6 +160,7 @@ app.get('/', (req, res) => {
     '.error { background: #fce8e6; color: #c5221f; padding: 12px; border-radius: 8px; margin-bottom: 16px; font-size: 14px; display: none; }' +
     '.success { background: #e6f4ea; color: #137333; padding: 12px; border-radius: 8px; margin-bottom: 16px; font-size: 14px; display: none; }' +
     '#registerForm { display: none; }' +
+    '#otherCountryGroup { display: none; }' +
     ' </style>' +
     '</head>' +
     '<body>' +
@@ -184,7 +184,8 @@ app.get('/', (req, res) => {
     ' <div class="form-group"><label>Email</label><input type="email" id="regEmail" required></div>' +
     ' <div class="form-group"><label>WhatsApp Number</label><input type="tel" id="phone" placeholder="+256..." required></div>' +
     ' <div class="form-group"><label>Password</label><input type="password" id="regPassword" minlength="6" required></div>' +
-    ' <div class="form-group"><label>Country Interest</label><select id="countryInterest" required><option value="">Select Country</option><option value="UAE">UAE</option><option value="Canada">Canada</option><option value="UK">UK</option><option value="Saudi Arabia">Saudi Arabia</option><option value="Qatar">Qatar</option></select></div>' +
+    ' <div class="form-group"><label>Country Interest</label><select id="countryInterest" onchange="checkOtherCountry()" required><option value="">Select Country</option><option value="UAE">UAE</option><option value="Canada">Canada</option><option value="UK">UK</option><option value="Saudi Arabia">Saudi Arabia</option><option value="Qatar">Qatar</option><option value="Others">Others</option></select></div>' +
+    ' <div class="form-group" id="otherCountryGroup"><label>Specify Country</label><input type="text" id="otherCountry" placeholder="Enter your country"></div>' +
     ' <div class="form-group"><label>Skills</label><input type="text" id="skills" placeholder="e.g. Housekeeping, Security" required></div>' +
     ' <button type="submit" class="btn">Create Free Account</button>' +
     ' </form>' +
@@ -202,6 +203,19 @@ app.get('/', (req, res) => {
     ' document.querySelectorAll(".tab")[0].classList.remove("active");' +
     ' document.querySelectorAll(".tab")[1].classList.add("active");' +
     ' }' +
+    ' function checkOtherCountry() {' +
+    ' const select = document.getElementById("countryInterest");' +
+    ' const otherGroup = document.getElementById("otherCountryGroup");' +
+    ' const otherInput = document.getElementById("otherCountry");' +
+    ' if (select.value === "Others") {' +
+    ' otherGroup.style.display = "block";' +
+    ' otherInput.required = true;' +
+    ' } else {' +
+    ' otherGroup.style.display = "none";' +
+    ' otherInput.required = false;' +
+    ' otherInput.value = "";' +
+    ' }' +
+    ' }' +
     ' async function handleLogin(e) {' +
     ' e.preventDefault();' +
     ' const res = await fetch("/api/login", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({ email: document.getElementById("loginEmail").value, password: document.getElementById("loginPassword").value }) });' +
@@ -211,7 +225,10 @@ app.get('/', (req, res) => {
     ' }' +
     ' async function handleRegister(e) {' +
     ' e.preventDefault();' +
-    ' const res = await fetch("/api/register", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({ firstName: document.getElementById("firstName").value, lastName: document.getElementById("lastName").value, email: document.getElementById("regEmail").value, phone: document.getElementById("phone").value, password: document.getElementById("regPassword").value, skills: document.getElementById("skills").value, country_interest: document.getElementById("countryInterest").value }) });' +
+    ' const countrySelect = document.getElementById("countryInterest").value;' +
+    ' const finalCountry = countrySelect === "Others"? document.getElementById("otherCountry").value : countrySelect;' +
+    ' if (countrySelect === "Others" &&!finalCountry.trim()) { document.getElementById("error").style.display = "block"; document.getElementById("error").textContent = "Please specify your country"; return; }' +
+    ' const res = await fetch("/api/register", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({ firstName: document.getElementById("firstName").value, lastName: document.getElementById("lastName").value, email: document.getElementById("regEmail").value, phone: document.getElementById("phone").value, password: document.getElementById("regPassword").value, skills: document.getElementById("skills").value, country_interest: finalCountry }) });' +
     ' const data = await res.json();' +
     ' if (data.success) { document.getElementById("success").style.display = "block"; document.getElementById("success").textContent = "Account created! Logging you in..."; setTimeout(() => window.location.href = "/jobs", 1000); }' +
     ' else { document.getElementById("error").style.display = "block"; document.getElementById("error").textContent = data.error; }' +
@@ -274,7 +291,7 @@ app.get('/jobs', requireLogin, async (req, res) => {
     ' <div class="container">' +
     ' <h2 id="jobs" style="margin: 0 0 20px 0;">Active Job Openings</h2>' +
     ' <div class="filters">' +
-    ' <select id="countryFilter"><option value="">All Countries</option><option value="UAE">UAE</option><option value="Canada">Canada</option><option value="UK">UK</option><option value="Saudi Arabia">Saudi Arabia</option></select>' +
+    ' <select id="countryFilter"><option value="">All Countries</option><option value="UAE">UAE</option><option value="Canada">Canada</option><option value="UK">UK</option><option value="Saudi Arabia">Saudi Arabia</option><option value="Qatar">Qatar</option></select>' +
     ' <select id="categoryFilter"><option value="">All Categories</option><option value="Hospitality">Hospitality</option><option value="Healthcare">Healthcare</option><option value="Security">Security</option><option value="Construction">Construction</option><option value="Agriculture">Agriculture</option></select>' +
     ' <input type="text" id="searchInput" placeholder="Search job title..." />' +
     ' </div>' +
@@ -334,7 +351,6 @@ app.get('/jobs', requireLogin, async (req, res) => {
   );
 });
 
-// API ROUTES
 app.get('/api/jobs', requireLogin, async (req, res) => {
   try {
     const result = await pool.query(`SELECT * FROM agency_jobs WHERE status = 'active' ORDER BY created_at DESC`);
