@@ -1,0 +1,16 @@
+{
+  "name": "emmietech-recruitment-agency",
+  "version": "1.0.0",
+  "description": "Uganda recruitment agency for UAE, Canada, UK jobs",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "express": "^4.19.2",
+    "node-fetch": "^3.3.2",
+    "pg": "^8.12.0"
+  }
+}
