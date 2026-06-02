@@ -110,6 +110,7 @@ app.get('/', (req, res) => {
     '.success { background: #e6f4ea; color: #137333; padding: 12px; border-radius: 8px; margin-bottom: 16px; font-size: 14px; display: none; }' +
     '#registerForm { display: none; }' +
     '#otherCountryGroup { display: none; }' +
+    '.password-hint { font-size: 12px; color: #5f6368; margin-top: 4px; }' +
     ' </style>' +
     '</head>' +
     '<body>' +
@@ -132,8 +133,9 @@ app.get('/', (req, res) => {
     ' <div class="form-group"><label>Last Name</label><input type="text" id="lastName" required></div>' +
     ' <div class="form-group"><label>Email</label><input type="email" id="regEmail" required></div>' +
     ' <div class="form-group"><label>WhatsApp Number</label><div class="phone-group"><select id="countryCode"><option value="+256">🇺🇬 +256</option><option value="+254">🇰🇪 +254</option><option value="+255">🇹🇿 +255</option><option value="+250">🇷🇼 +250</option><option value="+971">🇦🇪 +971</option><option value="+966">🇸🇦 +966</option><option value="+974">🇶🇦 +974</option><option value="+1">🇨🇦 +1</option><option value="+44">🇬🇧 +44</option><option value="+91">🇮🇳 +91</option><option value="+234">🇳🇬 +234</option><option value="+233">🇬🇭 +233</option><option value="+27">🇿🇦 +27</option></select><input type="tel" id="phone" placeholder="776686096" required></div></div>' +
-    ' <div class="form-group"><label>Password</label><input type="password" id="regPassword" minlength="6" required></div>' +
-    ' <div class="form-group"><label>Country Interest</label><select id="countryInterest" onchange="checkOtherCountry()" required><option value="">Select Country</option><option value="🇦🇪 UAE">🇦🇪 UAE</option><option value="🇨🇦 Canada">🇨🇦 Canada</option><option value="🇬🇧 UK">🇬🇧 UK</option><option value="🇸🇦 Saudi Arabia">🇸🇦 Saudi Arabia</option><option value="🇶🇦 Qatar">🇶🇦 Qatar</option><option value="🇺🇸 USA">🇺🇸 USA</option><option value="🇦🇺 Australia">🇦🇺 Australia</option><option value="🇩🇪 Germany">🇩🇪 Germany</option><option value="🇶🇦 Others">Others</option></select></div>' +
+    ' <div class="form-group"><label>Password</label><input type="password" id="regPassword" minlength="6" required><div class="password-hint">Minimum 6 characters</div></div>' +
+    ' <div class="form-group"><label>Confirm Password</label><input type="password" id="confirmPassword" minlength="6" required></div>' +
+    ' <div class="form-group"><label>Country Interest</label><select id="countryInterest" onchange="checkOtherCountry()" required><option value="">Select Country</option><option value="🇦🇪 UAE">🇦🇪 UAE</option><option value="🇨🇦 Canada">🇨🇦 Canada</option><option value="🇬🇧 UK">🇬🇧 UK</option><option value="🇸🇦 Saudi Arabia">🇸🇦 Saudi Arabia</option><option value="🇶🇦 Qatar">🇶🇦 Qatar</option><option value="🇺🇸 USA">🇺🇸 USA</option><option value="🇦🇺 Australia">🇦🇺 Australia</option><option value="🇩🇪 Germany">🇩🇪 Germany</option><option value="Others">Others</option></select></div>' +
     ' <div class="form-group" id="otherCountryGroup"><label>Specify Country</label><input type="text" id="otherCountry" placeholder="Enter your country"></div>' +
     ' <div class="form-group"><label>Skills</label><input type="text" id="skills" placeholder="e.g. Housekeeping, Security" required></div>' +
     ' <button type="submit" class="btn">Create Free Account</button>' +
@@ -156,7 +158,7 @@ app.get('/', (req, res) => {
     ' const select = document.getElementById("countryInterest");' +
     ' const otherGroup = document.getElementById("otherCountryGroup");' +
     ' const otherInput = document.getElementById("otherCountry");' +
-    ' if (select.value === "🇶🇦 Others") {' +
+    ' if (select.value === "Others") {' +
     ' otherGroup.style.display = "block";' +
     ' otherInput.required = true;' +
     ' } else {' +
@@ -167,6 +169,7 @@ app.get('/', (req, res) => {
     ' }' +
     ' async function handleLogin(e) {' +
     ' e.preventDefault();' +
+    ' document.getElementById("error").style.display = "none";' +
     ' const res = await fetch("/api/login", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({ email: document.getElementById("loginEmail").value, password: document.getElementById("loginPassword").value }) });' +
     ' const data = await res.json();' +
     ' if (data.success) { window.location.href = "/jobs"; }' +
@@ -174,11 +177,16 @@ app.get('/', (req, res) => {
     ' }' +
     ' async function handleRegister(e) {' +
     ' e.preventDefault();' +
+    ' document.getElementById("error").style.display = "none";' +
+    ' const password = document.getElementById("regPassword").value;' +
+    ' const confirmPassword = document.getElementById("confirmPassword").value;' +
+    ' if (password.length < 6) { document.getElementById("error").style.display = "block"; document.getElementById("error").textContent = "Password must be at least 6 characters"; return; }' +
+    ' if (password!== confirmPassword) { document.getElementById("error").style.display = "block"; document.getElementById("error").textContent = "Passwords do not match"; return; }' +
     ' const countrySelect = document.getElementById("countryInterest").value;' +
-    ' const finalCountry = countrySelect === "🇶🇦 Others"? document.getElementById("otherCountry").value : countrySelect;' +
-    ' if (countrySelect === "🇶🇦 Others" &&!finalCountry.trim()) { document.getElementById("error").style.display = "block"; document.getElementById("error").textContent = "Please specify your country"; return; }' +
+    ' const finalCountry = countrySelect === "Others"? document.getElementById("otherCountry").value : countrySelect;' +
+    ' if (countrySelect === "Others" &&!finalCountry.trim()) { document.getElementById("error").style.display = "block"; document.getElementById("error").textContent = "Please specify your country"; return; }' +
     ' const fullPhone = document.getElementById("countryCode").value + document.getElementById("phone").value;' +
-    ' const res = await fetch("/api/register", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({ firstName: document.getElementById("firstName").value, lastName: document.getElementById("lastName").value, email: document.getElementById("regEmail").value, phone: fullPhone, password: document.getElementById("regPassword").value, skills: document.getElementById("skills").value, country_interest: finalCountry }) });' +
+    ' const res = await fetch("/api/register", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({ firstName: document.getElementById("firstName").value, lastName: document.getElementById("lastName").value, email: document.getElementById("regEmail").value, phone: fullPhone, password: password, skills: document.getElementById("skills").value, country_interest: finalCountry }) });' +
     ' const data = await res.json();' +
     ' if (data.success) { document.getElementById("success").style.display = "block"; document.getElementById("success").textContent = "Account created! Logging you in..."; setTimeout(() => window.location.href = "/jobs", 1000); }' +
     ' else { document.getElementById("error").style.display = "block"; document.getElementById("error").textContent = data.error; }' +
@@ -312,6 +320,7 @@ app.get('/api/jobs', requireLogin, async (req, res) => {
 
 app.post('/api/register', async (req, res) => {
   const { firstName, lastName, email, phone, password, skills, country_interest } = req.body;
+  if (password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
   try {
     const hash = await bcrypt.hash(password, 10);
     const result = await pool.query(
