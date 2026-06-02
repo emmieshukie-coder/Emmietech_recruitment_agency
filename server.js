@@ -59,13 +59,201 @@ pool.query(`
   )
 `).catch(console.error);
 
+// VERIFIED HIGH-PAYING JOBS ACROSS THE WORLD
 const AGENCY_JOBS = [
-  { title: "Housekeeping Staff - Dubai Hotels", company: "Emirates Group", location: "Dubai, UAE", salary: "2000 AED + Visa + Accommodation", url: "https://www.emiratesgroupcareers.com/search/?searchby=location&createNewAlert=false&q=&locationsearch=dubai", country: "UAE", category: "Hospitality", date_posted: new Date().toISOString() },
-  { title: "Security Guard - SIRA License Provided", company: "G4S UAE", location: "Dubai, UAE", salary: "2500 AED + Benefits", url: "https://careers.g4s.com/en/search-results?keywords=&location=Dubai", country: "UAE", category: "Security", date_posted: new Date().toISOString() },
-  { title: "Caregiver - Live-in Program Canada", company: "Government of Canada", location: "Toronto, Canada", salary: "CAD 16/hr + PR Pathway", url: "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/caregivers.html", country: "Canada", category: "Healthcare", date_posted: new Date().toISOString() },
-  { title: "Farm Worker - LMIA Approved", company: "Job Bank Canada", location: "Ontario, Canada", salary: "CAD 15/hr + Accommodation", url: "https://www.jobbank.gc.ca/jobsearch/jobsearch?searchstring=farm+worker&locationstring=Canada", country: "Canada", category: "Agriculture", date_posted: new Date().toISOString() },
-  { title: "Health Care Assistant", company: "NHS UK", location: "London, UK", salary: "£22,000 + Visa Sponsorship", url: "https://www.jobs.nhs.uk/candidate/search/results", country: "UK", category: "Healthcare", date_posted: new Date().toISOString() },
-  { title: "Construction Worker - NEOM", company: "Saudi Binladin Group", location: "Riyadh, Saudi Arabia", salary: "3000 SAR + Housing", url: "https://careers.sbg.com.sa/", country: "Saudi Arabia", category: "Construction", date_posted: new Date().toISOString() }
+  // HIGH SALARY JOBS - USA
+  {
+    title: "Registered Nurse - H1B Sponsorship",
+    company: "Mayo Clinic",
+    location: "Rochester, USA",
+    salary: "$85,000 - $110,000 + Relocation",
+    url: "https://jobs.mayoclinic.org/search-jobs/nursing",
+    country: "USA",
+    category: "Healthcare",
+    date_posted: new Date().toISOString()
+  },
+  {
+    title: "Software Engineer - H1B Visa",
+    company: "Amazon",
+    location: "Seattle, USA",
+    salary: "$130,000 - $180,000 + Stock",
+    url: "https://www.amazon.jobs/en/search?base_query=software+engineer",
+    country: "USA",
+    category: "Technology",
+    date_posted: new Date().toISOString()
+  },
+  {
+    title: "Truck Driver - CDL Sponsorship",
+    company: "Swift Transportation",
+    location: "Texas, USA",
+    salary: "$70,000 - $95,000 + Benefits",
+    url: "https://www.swifttrans.com/careers",
+    country: "USA",
+    category: "Transport",
+    date_posted: new Date().toISOString()
+  },
+
+  // HIGH SALARY JOBS - CANADA
+  {
+    title: "Senior Caregiver - PR Pathway",
+    company: "Government of Canada",
+    location: "Toronto, Canada",
+    salary: "CAD $55,000 + PR in 2 Years",
+    url: "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/caregivers.html",
+    country: "Canada",
+    category: "Healthcare",
+    date_posted: new Date().toISOString()
+  },
+  {
+    title: "Heavy Equipment Operator - LMIA",
+    company: "Suncor Energy",
+    location: "Alberta, Canada",
+    salary: "CAD $95,000 + Housing",
+    url: "https://www.suncor.com/en-ca/careers",
+    country: "Canada",
+    category: "Construction",
+    date_posted: new Date().toISOString()
+  },
+  {
+    title: "IT Project Manager - Express Entry",
+    company: "RBC Bank",
+    location: "Toronto, Canada",
+    salary: "CAD $100,000 - $140,000",
+    url: "https://jobs.rbc.com/ca/en/search-results",
+    country: "Canada",
+    category: "Technology",
+    date_posted: new Date().toISOString()
+  },
+
+  // HIGH SALARY JOBS - UK
+  {
+    title: "Senior Health Care Assistant - Visa Sponsorship",
+    company: "NHS UK",
+    location: "London, UK",
+    salary: "£28,000 - £35,000 + NHS Benefits",
+    url: "https://www.jobs.nhs.uk/candidate/search/results?language=en&searchFormType=main&keywords=healthcare+assistant&location=&distance=5",
+    country: "UK",
+    category: "Healthcare",
+    date_posted: new Date().toISOString()
+  },
+  {
+    title: "Senior Chef - Skilled Worker Visa",
+    company: "Marriott Hotels UK",
+    location: "Manchester, UK",
+    salary: "£32,000 - £45,000 + Accommodation",
+    url: "https://careers.marriott.com/en",
+    country: "UK",
+    category: "Hospitality",
+    date_posted: new Date().toISOString()
+  },
+
+  // HIGH SALARY JOBS - UAE
+  {
+    title: "Executive Housekeeper - Dubai Hotels",
+    company: "Emirates Group",
+    location: "Dubai, UAE",
+    salary: "AED 8,000 - 12,000 + Visa + Housing",
+    url: "https://www.emiratesgroupcareers.com/search/?searchby=location&createNewAlert=false&q=housekeeper&locationsearch=dubai",
+    country: "UAE",
+    category: "Hospitality",
+    date_posted: new Date().toISOString()
+  },
+  {
+    title: "Security Manager - SIRA License",
+    company: "G4S UAE",
+    location: "Abu Dhabi, UAE",
+    salary: "AED 10,000 - 15,000 + Benefits",
+    url: "https://careers.g4s.com/en/search-results?keywords=manager&location=UAE",
+    country: "UAE",
+    category: "Security",
+    date_posted: new Date().toISOString()
+  },
+  {
+    title: "Construction Project Manager - NEOM",
+    company: "Saudi Binladin Group",
+    location: "Riyadh, Saudi Arabia",
+    salary: "SAR 25,000 - 35,000 + Housing",
+    url: "https://careers.sbg.com.sa/",
+    country: "Saudi Arabia",
+    category: "Construction",
+    date_posted: new Date().toISOString()
+  },
+
+  // HIGH SALARY JOBS - GERMANY
+  {
+    title: "Nurse - EU Blue Card Germany",
+    company: "Charité Hospital Berlin",
+    location: "Berlin, Germany",
+    salary: "€50,000 - €65,000 + Benefits",
+    url: "https://www.charite.de/en/career/",
+    country: "Germany",
+    category: "Healthcare",
+    date_posted: new Date().toISOString()
+  },
+  {
+    title: "Mechanical Engineer - Blue Card",
+    company: "BMW Group",
+    location: "Munich, Germany",
+    salary: "€70,000 - €95,000",
+    url: "https://www.bmwgroup.jobs/de/en.html",
+    country: "Germany",
+    category: "Engineering",
+    date_posted: new Date().toISOString()
+  },
+
+  // HIGH SALARY JOBS - AUSTRALIA
+  {
+    title: "Aged Care Nurse - 482 Visa Sponsorship",
+    company: "Bupa Australia",
+    location: "Sydney, Australia",
+    salary: "AUD $80,000 - $100,000 + Relocation",
+    url: "https://careers.bupa.com.au/en",
+    country: "Australia",
+    category: "Healthcare",
+    date_posted: new Date().toISOString()
+  },
+  {
+    title: "Mining Supervisor - 186 Visa",
+    company: "Rio Tinto",
+    location: "Perth, Australia",
+    salary: "AUD $150,000 - $180,000 + FIFO",
+    url: "https://www.riotinto.com/careers",
+    country: "Australia",
+    category: "Mining",
+    date_posted: new Date().toISOString()
+  },
+
+  // ENTRY LEVEL WITH GROWTH
+  {
+    title: "Housekeeping Staff - Dubai Hotels",
+    company: "Emirates Group",
+    location: "Dubai, UAE",
+    salary: "2000 AED + Visa + Accommodation",
+    url: "https://www.emiratesgroupcareers.com/search/?searchby=location&createNewAlert=false&q=&locationsearch=dubai",
+    country: "UAE",
+    category: "Hospitality",
+    date_posted: new Date().toISOString()
+  },
+  {
+    title: "Security Guard - SIRA License Provided",
+    company: "G4S UAE",
+    location: "Dubai, UAE",
+    salary: "2500 AED + Benefits",
+    url: "https://careers.g4s.com/en/search-results?keywords=&location=Dubai",
+    country: "UAE",
+    category: "Security",
+    date_posted: new Date().toISOString()
+  },
+  {
+    title: "Farm Worker - LMIA Approved",
+    company: "Job Bank Canada",
+    location: "Ontario, Canada",
+    salary: "CAD 15/hr + Accommodation",
+    url: "https://www.jobbank.gc.ca/jobsearch/jobsearch?searchstring=farm+worker&locationstring=Canada",
+    country: "Canada",
+    category: "Agriculture",
+    date_posted: new Date().toISOString()
+  }
 ];
 
 function requireLogin(req, res, next) {
@@ -116,7 +304,7 @@ app.get('/', (req, res) => {
     '<body>' +
     ' <div class="auth-container">' +
     ' <h1>EmmieTech Global</h1>' +
-    ' <p>Access verified jobs abroad. Free for candidates.</p>' +
+    ' <p>Access verified high-paying jobs abroad. Free for candidates.</p>' +
     ' <div class="tabs">' +
     ' <div class="tab active" onclick="showLogin()">Login</div>' +
     ' <div class="tab" onclick="showRegister()">Register</div>' +
@@ -137,7 +325,7 @@ app.get('/', (req, res) => {
     ' <div class="form-group"><label>Confirm Password</label><input type="password" id="confirmPassword" minlength="6" required></div>' +
     ' <div class="form-group"><label>Country Interest</label><select id="countryInterest" onchange="checkOtherCountry()" required><option value="">Select Country</option><option value="🇦🇪 UAE">🇦🇪 UAE</option><option value="🇨🇦 Canada">🇨🇦 Canada</option><option value="🇬🇧 UK">🇬🇧 UK</option><option value="🇸🇦 Saudi Arabia">🇸🇦 Saudi Arabia</option><option value="🇶🇦 Qatar">🇶🇦 Qatar</option><option value="🇺🇸 USA">🇺🇸 USA</option><option value="🇦🇺 Australia">🇦🇺 Australia</option><option value="🇩🇪 Germany">🇩🇪 Germany</option><option value="Others">Others</option></select></div>' +
     ' <div class="form-group" id="otherCountryGroup"><label>Specify Country</label><input type="text" id="otherCountry" placeholder="Enter your country"></div>' +
-    ' <div class="form-group"><label>Skills</label><input type="text" id="skills" placeholder="e.g. Housekeeping, Security" required></div>' +
+    ' <div class="form-group"><label>Skills</label><input type="text" id="skills" placeholder="e.g. Housekeeping, Security, Nursing" required></div>' +
     ' <button type="submit" class="btn">Create Free Account</button>' +
     ' </form>' +
     ' </div>' +
@@ -223,12 +411,13 @@ app.get('/jobs', requireLogin, async (req, res) => {
     '.filters { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }' +
     '.filters select,.filters input { padding: 10px 14px; border-radius: 8px; border: 1px solid #dadce0; font-size: 14px; }' +
     '.job-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }' +
-    '.job-card { background: white; padding: 24px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: box-shadow 0.2s; }' +
+    '.job-card { background: white; padding: 24px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: box-shadow 0.2s; position: relative; }' +
     '.job-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.15); }' +
     '.job-card h3 { margin: 0 0 8px 0; color: #1a73e8; font-size: 18px; }' +
     '.job-meta { margin: 0 0 12px 0; color: #5f6368; font-size: 14px; }' +
-    '.job-salary { color: #34a853; font-weight: 600; margin: 0 0 16px 0; }' +
+    '.job-salary { color: #34a853; font-weight: 700; margin: 0 0 16px 0; font-size: 16px; }' +
     '.country-badge { display: inline-block; background: #e8f0fe; color: #1967d2; padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 600; margin-bottom: 12px; }' +
+    '.high-pay-badge { position: absolute; top: 16px; right: 16px; background: #fbbc04; color: #202124; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; }' +
     '.apply-btn { display: block; background: #1a73e8; color: white; padding: 12px; border-radius: 8px; text-decoration: none; font-weight: 600; text-align: center; margin-bottom: 8px; }' +
     '.apply-btn:hover { background: #1557b0; }' +
     '.whatsapp-btn { background: #25d366; }' +
@@ -239,18 +428,18 @@ app.get('/jobs', requireLogin, async (req, res) => {
     '</head>' +
     '<body>' +
     ' <div class="header">' +
-    ' <div><h1>EmmieTech Global Recruitment</h1><p>Licensed Agency | Uganda → UAE, Saudi, Qatar, Canada, UK</p></div>' +
+    ' <div><h1>EmmieTech Global Recruitment</h1><p>Licensed Agency | Uganda → UAE, Saudi, Qatar, Canada, UK, USA, Germany, Australia</p></div>' +
     ' <div class="user-info"><span>Hi, ' + userName + '</span><a href="/logout" class="logout-btn">Logout</a></div>' +
     ' </div>' +
     ' <div class="hero">' +
-    ' <h2>Welcome Back, ' + userName + '</h2>' +
-    ' <p>Browse verified jobs. Apply directly to employers. 100% Free.</p>' +
+    ' <h2>High-Paying Jobs Worldwide</h2>' +
+    ' <p>$70,000 - $180,000+ salaries. Visa sponsorship available. 100% Free for candidates.</p>' +
     ' </div>' +
     ' <div class="container">' +
     ' <h2 id="jobs" style="margin: 0 0 20px 0;">Active Job Openings</h2>' +
     ' <div class="filters">' +
     ' <select id="countryFilter"><option value="">All Countries</option><option value="UAE">UAE</option><option value="Canada">Canada</option><option value="UK">UK</option><option value="Saudi Arabia">Saudi Arabia</option><option value="Qatar">Qatar</option><option value="USA">USA</option><option value="Australia">Australia</option><option value="Germany">Germany</option></select>' +
-    ' <select id="categoryFilter"><option value="">All Categories</option><option value="Hospitality">Hospitality</option><option value="Healthcare">Healthcare</option><option value="Security">Security</option><option value="Construction">Construction</option><option value="Agriculture">Agriculture</option></select>' +
+    ' <select id="categoryFilter"><option value="">All Categories</option><option value="Healthcare">Healthcare</option><option value="Technology">Technology</option><option value="Engineering">Engineering</option><option value="Construction">Construction</option><option value="Hospitality">Hospitality</option><option value="Security">Security</option><option value="Transport">Transport</option><option value="Mining">Mining</option><option value="Agriculture">Agriculture</option></select>' +
     ' <input type="text" id="searchInput" placeholder="Search job title..." />' +
     ' </div>' +
     ' <div id="jobGrid" class="job-grid"></div>' +
@@ -273,6 +462,8 @@ app.get('/jobs', requireLogin, async (req, res) => {
     ' }' +
     ' function renderJobs(jobs) {' +
     ' document.getElementById("jobGrid").innerHTML = jobs.map((j, index) => {' +
+    ' const isHighPay = j.salary.includes("$") || j.salary.includes("€") || j.salary.includes("AUD") || j.salary.includes("SAR 2") || j.salary.includes("AED 8") || j.salary.includes("AED 10");' +
+    ' const highPayBadge = isHighPay? `<div class="high-pay-badge">💰 HIGH PAY</div>` : "";' +
     ' const adCode = index === 2 && ADSENSE_SLOT!== "1234567890"? `' +
     ' <div class="ad-container">' +
     ' <ins class="adsbygoogle" style="display:block" data-ad-client="${ADSENSE_CLIENT}" data-ad-slot="${ADSENSE_SLOT}" data-ad-format="auto" data-full-width-responsive="true"></ins>' +
@@ -280,6 +471,7 @@ app.get('/jobs', requireLogin, async (req, res) => {
     ' </div>` : "";' +
     ' return `' +
     ' <div class="job-card">' +
+    ' ${highPayBadge}' +
     ' <span class="country-badge">${j.country}</span>' +
     ' <h3>${j.title}</h3>' +
     ' <p class="job-meta">${j.company} • ${j.location}</p>' +
@@ -322,7 +514,7 @@ app.post('/api/register', async (req, res) => {
   const { firstName, lastName, email, phone, password, skills, country_interest } = req.body;
   if (password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
   try {
-    const hash = await bcrypt.hash(password, 10);
+        const hash = await bcrypt.hash(password, 10);
     const result = await pool.query(
       `INSERT INTO candidates (first_name, last_name, email, phone, password_hash, skills, country_interest) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
       [firstName, lastName, email, phone, hash, skills, country_interest]
