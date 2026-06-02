@@ -60,66 +60,12 @@ pool.query(`
 `).catch(console.error);
 
 const AGENCY_JOBS = [
-  {
-    title: "Housekeeping Staff - Dubai Hotels",
-    company: "Emirates Group",
-    location: "Dubai, UAE",
-    salary: "2000 AED + Visa + Accommodation",
-    url: "https://www.emiratesgroupcareers.com/search/?searchby=location&createNewAlert=false&q=&locationsearch=dubai",
-    country: "UAE",
-    category: "Hospitality",
-    date_posted: new Date().toISOString()
-  },
-  {
-    title: "Security Guard - SIRA License Provided",
-    company: "G4S UAE",
-    location: "Dubai, UAE",
-    salary: "2500 AED + Benefits",
-    url: "https://careers.g4s.com/en/search-results?keywords=&location=Dubai",
-    country: "UAE",
-    category: "Security",
-    date_posted: new Date().toISOString()
-  },
-  {
-    title: "Caregiver - Live-in Program Canada",
-    company: "Government of Canada",
-    location: "Toronto, Canada",
-    salary: "CAD 16/hr + PR Pathway",
-    url: "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/caregivers.html",
-    country: "Canada",
-    category: "Healthcare",
-    date_posted: new Date().toISOString()
-  },
-  {
-    title: "Farm Worker - LMIA Approved",
-    company: "Job Bank Canada",
-    location: "Ontario, Canada",
-    salary: "CAD 15/hr + Accommodation",
-    url: "https://www.jobbank.gc.ca/jobsearch/jobsearch?searchstring=farm+worker&locationstring=Canada",
-    country: "Canada",
-    category: "Agriculture",
-    date_posted: new Date().toISOString()
-  },
-  {
-    title: "Health Care Assistant",
-    company: "NHS UK",
-    location: "London, UK",
-    salary: "£22,000 + Visa Sponsorship",
-    url: "https://www.jobs.nhs.uk/candidate/search/results",
-    country: "UK",
-    category: "Healthcare",
-    date_posted: new Date().toISOString()
-  },
-  {
-    title: "Construction Worker - NEOM",
-    company: "Saudi Binladin Group",
-    location: "Riyadh, Saudi Arabia",
-    salary: "3000 SAR + Housing",
-    url: "https://careers.sbg.com.sa/",
-    country: "Saudi Arabia",
-    category: "Construction",
-    date_posted: new Date().toISOString()
-  }
+  { title: "Housekeeping Staff - Dubai Hotels", company: "Emirates Group", location: "Dubai, UAE", salary: "2000 AED + Visa + Accommodation", url: "https://www.emiratesgroupcareers.com/search/?searchby=location&createNewAlert=false&q=&locationsearch=dubai", country: "UAE", category: "Hospitality", date_posted: new Date().toISOString() },
+  { title: "Security Guard - SIRA License Provided", company: "G4S UAE", location: "Dubai, UAE", salary: "2500 AED + Benefits", url: "https://careers.g4s.com/en/search-results?keywords=&location=Dubai", country: "UAE", category: "Security", date_posted: new Date().toISOString() },
+  { title: "Caregiver - Live-in Program Canada", company: "Government of Canada", location: "Toronto, Canada", salary: "CAD 16/hr + PR Pathway", url: "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/caregivers.html", country: "Canada", category: "Healthcare", date_posted: new Date().toISOString() },
+  { title: "Farm Worker - LMIA Approved", company: "Job Bank Canada", location: "Ontario, Canada", salary: "CAD 15/hr + Accommodation", url: "https://www.jobbank.gc.ca/jobsearch/jobsearch?searchstring=farm+worker&locationstring=Canada", country: "Canada", category: "Agriculture", date_posted: new Date().toISOString() },
+  { title: "Health Care Assistant", company: "NHS UK", location: "London, UK", salary: "£22,000 + Visa Sponsorship", url: "https://www.jobs.nhs.uk/candidate/search/results", country: "UK", category: "Healthcare", date_posted: new Date().toISOString() },
+  { title: "Construction Worker - NEOM", company: "Saudi Binladin Group", location: "Riyadh, Saudi Arabia", salary: "3000 SAR + Housing", url: "https://careers.sbg.com.sa/", country: "Saudi Arabia", category: "Construction", date_posted: new Date().toISOString() }
 ];
 
 function requireLogin(req, res, next) {
@@ -146,7 +92,7 @@ app.get('/', (req, res) => {
     ' <style>' +
     ' * { box-sizing: border-box; }' +
     ' body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; margin: 0; padding: 0; background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; }' +
-    '.auth-container { background: white; padding: 40px; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.2); width: 90%; max-width: 400px; }' +
+    '.auth-container { background: white; padding: 40px; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.2); width: 90%; max-width: 420px; }' +
     '.auth-container h1 { margin: 0 0 8px 0; font-size: 24px; color: #1a73e8; text-align: center; }' +
     '.auth-container p { margin: 0 0 24px 0; color: #5f6368; text-align: center; font-size: 14px; }' +
     '.tabs { display: flex; margin-bottom: 24px; border-bottom: 2px solid #f1f3f4; }' +
@@ -155,6 +101,9 @@ app.get('/', (req, res) => {
     '.form-group { margin-bottom: 16px; }' +
     '.form-group label { display: block; margin-bottom: 6px; font-size: 14px; font-weight: 600; color: #202124; }' +
     '.form-group input,.form-group select { width: 100%; padding: 12px; border: 1px solid #dadce0; border-radius: 8px; font-size: 14px; }' +
+    '.phone-group { display: flex; gap: 8px; }' +
+    '.phone-group select { width: 35%; }' +
+    '.phone-group input { width: 65%; }' +
     '.btn { width: 100%; background: #1a73e8; color: white; padding: 14px; border: none; border-radius: 8px; font-weight: 600; font-size: 16px; cursor: pointer; }' +
     '.btn:hover { background: #1557b0; }' +
     '.error { background: #fce8e6; color: #c5221f; padding: 12px; border-radius: 8px; margin-bottom: 16px; font-size: 14px; display: none; }' +
@@ -182,9 +131,9 @@ app.get('/', (req, res) => {
     ' <div class="form-group"><label>First Name</label><input type="text" id="firstName" required></div>' +
     ' <div class="form-group"><label>Last Name</label><input type="text" id="lastName" required></div>' +
     ' <div class="form-group"><label>Email</label><input type="email" id="regEmail" required></div>' +
-    ' <div class="form-group"><label>WhatsApp Number</label><input type="tel" id="phone" placeholder="+256..." required></div>' +
+    ' <div class="form-group"><label>WhatsApp Number</label><div class="phone-group"><select id="countryCode"><option value="+256">🇺🇬 +256</option><option value="+254">🇰🇪 +254</option><option value="+255">🇹🇿 +255</option><option value="+250">🇷🇼 +250</option><option value="+971">🇦🇪 +971</option><option value="+966">🇸🇦 +966</option><option value="+974">🇶🇦 +974</option><option value="+1">🇨🇦 +1</option><option value="+44">🇬🇧 +44</option><option value="+91">🇮🇳 +91</option><option value="+234">🇳🇬 +234</option><option value="+233">🇬🇭 +233</option><option value="+27">🇿🇦 +27</option></select><input type="tel" id="phone" placeholder="776686096" required></div></div>' +
     ' <div class="form-group"><label>Password</label><input type="password" id="regPassword" minlength="6" required></div>' +
-    ' <div class="form-group"><label>Country Interest</label><select id="countryInterest" onchange="checkOtherCountry()" required><option value="">Select Country</option><option value="UAE">UAE</option><option value="Canada">Canada</option><option value="UK">UK</option><option value="Saudi Arabia">Saudi Arabia</option><option value="Qatar">Qatar</option><option value="Others">Others</option></select></div>' +
+    ' <div class="form-group"><label>Country Interest</label><select id="countryInterest" onchange="checkOtherCountry()" required><option value="">Select Country</option><option value="🇦🇪 UAE">🇦🇪 UAE</option><option value="🇨🇦 Canada">🇨🇦 Canada</option><option value="🇬🇧 UK">🇬🇧 UK</option><option value="🇸🇦 Saudi Arabia">🇸🇦 Saudi Arabia</option><option value="🇶🇦 Qatar">🇶🇦 Qatar</option><option value="🇺🇸 USA">🇺🇸 USA</option><option value="🇦🇺 Australia">🇦🇺 Australia</option><option value="🇩🇪 Germany">🇩🇪 Germany</option><option value="🇶🇦 Others">Others</option></select></div>' +
     ' <div class="form-group" id="otherCountryGroup"><label>Specify Country</label><input type="text" id="otherCountry" placeholder="Enter your country"></div>' +
     ' <div class="form-group"><label>Skills</label><input type="text" id="skills" placeholder="e.g. Housekeeping, Security" required></div>' +
     ' <button type="submit" class="btn">Create Free Account</button>' +
@@ -207,7 +156,7 @@ app.get('/', (req, res) => {
     ' const select = document.getElementById("countryInterest");' +
     ' const otherGroup = document.getElementById("otherCountryGroup");' +
     ' const otherInput = document.getElementById("otherCountry");' +
-    ' if (select.value === "Others") {' +
+    ' if (select.value === "🇶🇦 Others") {' +
     ' otherGroup.style.display = "block";' +
     ' otherInput.required = true;' +
     ' } else {' +
@@ -226,9 +175,10 @@ app.get('/', (req, res) => {
     ' async function handleRegister(e) {' +
     ' e.preventDefault();' +
     ' const countrySelect = document.getElementById("countryInterest").value;' +
-    ' const finalCountry = countrySelect === "Others"? document.getElementById("otherCountry").value : countrySelect;' +
-    ' if (countrySelect === "Others" &&!finalCountry.trim()) { document.getElementById("error").style.display = "block"; document.getElementById("error").textContent = "Please specify your country"; return; }' +
-    ' const res = await fetch("/api/register", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({ firstName: document.getElementById("firstName").value, lastName: document.getElementById("lastName").value, email: document.getElementById("regEmail").value, phone: document.getElementById("phone").value, password: document.getElementById("regPassword").value, skills: document.getElementById("skills").value, country_interest: finalCountry }) });' +
+    ' const finalCountry = countrySelect === "🇶🇦 Others"? document.getElementById("otherCountry").value : countrySelect;' +
+    ' if (countrySelect === "🇶🇦 Others" &&!finalCountry.trim()) { document.getElementById("error").style.display = "block"; document.getElementById("error").textContent = "Please specify your country"; return; }' +
+    ' const fullPhone = document.getElementById("countryCode").value + document.getElementById("phone").value;' +
+    ' const res = await fetch("/api/register", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({ firstName: document.getElementById("firstName").value, lastName: document.getElementById("lastName").value, email: document.getElementById("regEmail").value, phone: fullPhone, password: document.getElementById("regPassword").value, skills: document.getElementById("skills").value, country_interest: finalCountry }) });' +
     ' const data = await res.json();' +
     ' if (data.success) { document.getElementById("success").style.display = "block"; document.getElementById("success").textContent = "Account created! Logging you in..."; setTimeout(() => window.location.href = "/jobs", 1000); }' +
     ' else { document.getElementById("error").style.display = "block"; document.getElementById("error").textContent = data.error; }' +
@@ -291,7 +241,7 @@ app.get('/jobs', requireLogin, async (req, res) => {
     ' <div class="container">' +
     ' <h2 id="jobs" style="margin: 0 0 20px 0;">Active Job Openings</h2>' +
     ' <div class="filters">' +
-    ' <select id="countryFilter"><option value="">All Countries</option><option value="UAE">UAE</option><option value="Canada">Canada</option><option value="UK">UK</option><option value="Saudi Arabia">Saudi Arabia</option><option value="Qatar">Qatar</option></select>' +
+    ' <select id="countryFilter"><option value="">All Countries</option><option value="UAE">UAE</option><option value="Canada">Canada</option><option value="UK">UK</option><option value="Saudi Arabia">Saudi Arabia</option><option value="Qatar">Qatar</option><option value="USA">USA</option><option value="Australia">Australia</option><option value="Germany">Germany</option></select>' +
     ' <select id="categoryFilter"><option value="">All Categories</option><option value="Hospitality">Hospitality</option><option value="Healthcare">Healthcare</option><option value="Security">Security</option><option value="Construction">Construction</option><option value="Agriculture">Agriculture</option></select>' +
     ' <input type="text" id="searchInput" placeholder="Search job title..." />' +
     ' </div>' +
