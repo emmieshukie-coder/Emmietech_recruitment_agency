@@ -11,8 +11,8 @@ const ADZUNA_APP_ID = 'cd82aca8';
 const ADZUNA_API_KEY = '39952eab2d2de243ff1ceffc7dc36478';
 const RAPIDAPI_KEY = '96a9c08353msh17930481ae22721p150e24jsn49eed442acdc';
 const YOUR_WHATSAPP = '+256 776 686 096';
-const ADSENSE_PUBLISHER_ID = 'ca-pub-1637256996790764'; // YOUR REAL ID
-const ADSENSE_SLOT_ID = '1234567890'; // CREATE AD UNIT NEXT TO GET THIS
+const ADSENSE_PUBLISHER_ID = 'ca-pub-1637256996790764';
+const ADSENSE_SLOT_ID = '1234567890'; // REPLACE AFTER YOU CREATE AD UNIT
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -124,7 +124,7 @@ app.get('/', (req, res) => {
     ' <meta charset="UTF-8">' +
     ' <meta name="viewport" content="width=device-width, initial-scale=1.0">' +
     ' <title>EmmieTech Global Recruitment Agency - Uganda to UAE, Canada, UK</title>' +
-    ' <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + ADSENSE_PUBLISHER_ID + '" crossorigin="anonymous"></script>' +
+    ' <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + ADSENSE_PUBLISHER_ID + '" crossorigin="anonymous"><\/script>' +
     ' <style>' +
     ' body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; margin: 0; padding: 0; background: #f8f9fa; color: #202124; }' +
     '.header { background: #fff; border-bottom: 1px solid #dadce0; padding: 16px 24px; position: sticky; top: 0; z-index: 100; }' +
@@ -202,7 +202,7 @@ app.get('/', (req, res) => {
     '   const adCode = index === 2 && ADSENSE_SLOT !== "1234567890" ? `' +
     '   <div class="ad-container">' +
     '     <ins class="adsbygoogle" style="display:block" data-ad-client="${ADSENSE_CLIENT}" data-ad-slot="${ADSENSE_SLOT}" data-ad-format="auto" data-full-width-responsive="true"></ins>' +
-    '     <script>(adsbygoogle = window.adsbygoogle || []).push({});<\/script>' +
+    '     <script>(adsbygoogle = window.adsbygoogle || []).push({});<\\/script>' +
     '   </div>` : "";' +
     '   return `' +
     '   <div class="job-card">' +
@@ -229,7 +229,7 @@ app.get('/', (req, res) => {
     ' document.getElementById("categoryFilter").addEventListener("change", filterJobs);' +
     ' document.getElementById("searchInput").addEventListener("input", filterJobs);' +
     ' loadJobs();' +
-    ' </script>' +
+    ' <\/script>' +
     ' </body>' +
     ' </html>'
   );
