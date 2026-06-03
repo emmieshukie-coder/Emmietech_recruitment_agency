@@ -64,7 +64,6 @@ pool.query(`ALTER TABLE agency_jobs ADD CONSTRAINT unique_job_url UNIQUE (url)`)
   console.log('Constraint exists or table empty:', e.message);
 });
 
-// GET USER COUNTRY FROM IP
 async function getUserCountry(req) {
   if (!IPINFO_KEY) return 'Uganda';
   try {
@@ -87,7 +86,6 @@ async function getUserCountry(req) {
   }
 }
 
-// VERIFIED HIGH-PAYING JOBS - FALLBACK IF API FAILS
 const AGENCY_JOBS = [
   { title: "Registered Nurse - H1B Sponsorship", company: "Mayo Clinic", location: "Rochester, USA", salary: "$85,000 - $110,000 + Relocation", url: "https://jobs.mayoclinic.org/search-jobs/nursing", country: "USA", category: "Healthcare" },
   { title: "Software Engineer - H1B Visa", company: "Amazon", location: "Seattle, USA", salary: "$130,000 - $180,000 + Stock", url: "https://www.amazon.jobs/en/search?base_query=software+engineer", country: "USA", category: "Technology" },
@@ -109,7 +107,6 @@ const AGENCY_JOBS = [
   { title: "Farm Worker - LMIA Approved", company: "Job Bank Canada", location: "Ontario, Canada", salary: "CAD 15/hr + Accommodation", url: "https://www.jobbank.gc.ca/jobsearch/jobsearch?searchstring=farm+worker", country: "Canada", category: "Agriculture" }
 ];
 
-// AUTO-FETCH NEW JOBS DAILY FROM ADZUNA
 async function fetchDailyJobs() {
   console.log('Starting daily job fetch...');
   const countries = [
@@ -149,7 +146,6 @@ async function fetchDailyJobs() {
               );
               totalAdded++;
             } catch (insertErr) {
-              // Ignore duplicates
             }
           }
         }
@@ -161,7 +157,6 @@ async function fetchDailyJobs() {
   console.log(`Daily job fetch complete. Added ${totalAdded} new jobs.`);
 }
 
-// RUN ONCE AT STARTUP + EVERY 24 HOURS
 fetchDailyJobs();
 setInterval(fetchDailyJobs, 24 * 60 * 60 * 1000);
 
@@ -189,7 +184,6 @@ app.get('/privacy', (req, res) => {
 <body>
   <h1>Privacy Policy for EmmieTech Global Recruitment</h1>
   <p><strong>Last updated: June 3, 2026</strong></p>
-
   <h2>1. Information We Collect</h2>
   <p>We collect information you provide directly to us, such as when you create an account or apply for jobs. This includes:</p>
   <ul>
@@ -198,7 +192,6 @@ app.get('/privacy', (req, res) => {
     <li>Resume/CV and job application data</li>
     <li>IP address for geolocation to show relevant jobs</li>
   </ul>
-
   <h2>2. How We Use Your Information</h2>
   <p>We use the information to:</p>
   <ul>
@@ -207,28 +200,21 @@ app.get('/privacy', (req, res) => {
     <li>Show jobs relevant to your location</li>
     <li>Improve our services</li>
   </ul>
-
   <h2>3. Cookies and Advertising</h2>
   <p>We use cookies to operate our service. Third party vendors, including Google, use cookies to serve ads based on your prior visits to our website or other websites.</p>
   <p>Google's use of advertising cookies enables it and its partners to serve ads to you based on your visit to our sites and/or other sites on the Internet.</p>
   <p>You may opt out of personalized advertising by visiting <a href="https://www.google.com/settings/ads">Google Ads Settings</a>.</p>
-
   <h2>4. Google AdSense</h2>
   <p>This site uses Google AdSense. AdSense uses cookies to serve ads. Google's use of the DART cookie enables it to serve ads to users based on their visit to our site and other sites on the Internet. Users may opt out of the use of the DART cookie by visiting the Google ad and content network privacy policy.</p>
-
   <h2>5. Data Sharing</h2>
   <p>We do not sell your personal data. We share your application data only with employers for jobs you apply to. We may share data with service providers like Render, Supabase, and IPinfo to operate this site.</p>
-
   <h2>6. Data Security</h2>
   <p>We use industry-standard security measures to protect your data. However, no method of transmission over the Internet is 100% secure.</p>
-
   <h2>7. Your Rights</h2>
   <p>You may request to access, update, or delete your personal data by contacting us.</p>
-
   <h2>8. Contact Us</h2>
   <p>For privacy questions, contact: <strong>emmietech.recruitment@gmail.com</strong></p>
   <p>EmmieTech Global Recruitment, Licensed Agency, Uganda</p>
-
   <p><a href="/">Back to Jobs</a></p>
 </body>
 </html>
@@ -250,12 +236,9 @@ app.get('/about', (req, res) => {
 <body>
   <h1>About EmmieTech Global Recruitment</h1>
   <p><strong>Licensed Recruitment Agency | Uganda → Global</strong></p>
-
   <p>EmmieTech Global Recruitment connects skilled professionals from Uganda and East Africa with high-paying job opportunities worldwide.</p>
-
   <h2>Countries We Recruit For:</h2>
   <p>UAE, Saudi Arabia, Qatar, Canada, UK, USA, Germany, Australia</p>
-
   <h2>Our Services:</h2>
   <ul>
     <li>100% Free for candidates - we never charge job seekers</li>
@@ -263,11 +246,9 @@ app.get('/about', (req, res) => {
     <li>CV review and interview coaching</li>
     <li>Direct employer connections</li>
   </ul>
-
   <h2>Contact</h2>
   <p>Email: emmietech.recruitment@gmail.com</p>
   <p>WhatsApp: ${YOUR_WHATSAPP}</p>
-
   <p><a href="/">Browse Jobs</a> | <a href="/privacy">Privacy Policy</a></p>
 </body>
 </html>
@@ -318,7 +299,7 @@ app.get('/', (req, res) => {
     '<body>' +
     ' <div class="auth-container">' +
     ' <div class="logo-header">' +
-    ' <img src="https://upload.wikimedia.org/wikipedia/commons/3/3e/Coat_of_arms_of_Uganda.svg" alt="Uganda Coat of Arms">' +
+    ' <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Coat_of_arms_of_Uganda.svg/240px-Coat_of_arms_of_Uganda.svg.png" alt="Uganda Coat of Arms">' +
     ' <h1>EmmieTech Global</h1>' +
     ' </div>' +
     ' <p>Access verified high-paying jobs abroad. Free for candidates.</p>' +
@@ -443,7 +424,7 @@ app.get('/jobs', requireLogin, async (req, res) => {
     '.whatsapp-btn { background: #25d366; }' +
     '.whatsapp-btn:hover { background: #1da851; }' +
     '.footer { background: #202124; color: #e8eaed; padding: 40px 20px; margin-top: 60px; text-align: center; }' +
-    '.ad-container { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0,0,0.1); text-align: center; min-height: 280px; }' +
+    '.ad-container { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); text-align: center; min-height: 280px;  }' +
     '.footer-links { margin-top: 20px; }' +
     '.footer-links a { color: #8ab4f8; text-decoration: none; margin: 0 10px; font-size: 14px; }' +
     '@media (max-width: 600px) {.header-left img { height: 40px; }.header h1 { font-size: 18px; }.header p { font-size: 11px; } }' +
@@ -452,7 +433,7 @@ app.get('/jobs', requireLogin, async (req, res) => {
     '<body>' +
     ' <div class="header">' +
     ' <div class="header-left">' +
-    ' <img src="https://upload.wikimedia.org/wikipedia/commons/3/3e/Coat_of_arms_of_Uganda.svg" alt="Uganda Coat of Arms">' +
+    ' <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Coat_of_arms_of_Uganda.svg/240px-Coat_of_arms_of_Uganda.svg.png" alt="Uganda Coat of Arms">' +
     ' <div><h1>EmmieTech Global Recruitment</h1><p>Licensed Agency | Uganda → UAE, Saudi, Qatar, Canada, UK, USA, Germany, Australia</p></div>' +
     ' </div>' +
     ' <div class="user-info"><span>Hi, ' + userName + '</span><a href="/logout" class="logout-btn">Logout</a></div>' +
@@ -549,7 +530,6 @@ app.get('/api/jobs', requireLogin, async (req, res) => {
   try {
     const userCountry = await getUserCountry(req);
 
-    // Priority for East Africa: UAE, Saudi, Qatar, Canada, UK, USA
     const priorityCountries = ['UAE', 'Saudi Arabia', 'Qatar', 'Canada', 'UK', 'USA', 'Australia', 'Germany'];
 
     const result = await pool.query(`
