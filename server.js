@@ -14,7 +14,7 @@ const RAPIDAPI_KEY = '96a9c08353msh17930481ae22721p150e24jsn49eed442acdc';
 const YOUR_WHATSAPP = '+256 776 686 096';
 const ADSENSE_PUBLISHER_ID = 'ca-pub-1637256996790764';
 const ADSENSE_SLOT_ID = '1234567890';
-const IPINFO_KEY = process.env.IPINFO_KEY || ''; // Add to Render env vars
+const IPINFO_KEY = process.env.IPINFO_KEY || '';
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -141,6 +141,7 @@ async function fetchDailyJobs() {
                   job.title,
                   job.company?.display_name || 'Confidential',
                   job.location?.display_name || country.name,
+                  country.name,
                   job.salary_max? `${job.salary_min}-${job.salary_max} ${job.salary_is_predicted? '(est)' : ''}` : 'Competitive',
                   job.category?.label || 'General',
                   job.redirect_url
@@ -290,7 +291,9 @@ app.get('/', (req, res) => {
     ' * { box-sizing: border-box; }' +
     ' body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; margin: 0; padding: 0; background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; }' +
     '.auth-container { background: white; padding: 40px; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.2); width: 90%; max-width: 420px; }' +
-    '.auth-container h1 { margin: 0 0 8px 0; font-size: 24px; color: #1a73e8; text-align: center; }' +
+    '.logo-header { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 8px; }' +
+    '.logo-header img { height: 40px; width: auto; }' +
+    '.logo-header h1 { margin: 0; font-size: 24px; color: #1a73e8; }' +
     '.auth-container p { margin: 0 0 24px 0; color: #5f6368; text-align: center; font-size: 14px; }' +
     '.tabs { display: flex; margin-bottom: 24px; border-bottom: 2px solid #f1f3f4; }' +
     '.tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; font-weight: 600; color: #5f6368; border-bottom: 3px solid transparent; }' +
@@ -314,7 +317,10 @@ app.get('/', (req, res) => {
     '</head>' +
     '<body>' +
     ' <div class="auth-container">' +
+    ' <div class="logo-header">' +
+    ' <img src="https://upload.wikimedia.org/wikipedia/commons/3/3e/Coat_of_arms_of_Uganda.svg" alt="Uganda Coat of Arms">' +
     ' <h1>EmmieTech Global</h1>' +
+    ' </div>' +
     ' <p>Access verified high-paying jobs abroad. Free for candidates.</p>' +
     ' <div class="tabs">' +
     ' <div class="tab active" onclick="showLogin()">Login</div>' +
@@ -411,9 +417,11 @@ app.get('/jobs', requireLogin, async (req, res) => {
     ' <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + ADSENSE_PUBLISHER_ID + '" crossorigin="anonymous"><\/script>' +
     ' <style>' +
     ' body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; margin: 0; padding: 0; background: #f8f9fa; color: #202124; }' +
-    '.header { background: #fff; border-bottom: 1px solid #dadce0; padding: 16px 24px; position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; }' +
-    '.header h1 { margin: 0; font-size: 22px; color: #1a73e8; }' +
-    '.header p { margin: 4px 0 0; font-size: 13px; color: #5f6368; }' +
+    '.header { background: #fff; border-bottom: 1px solid #dadce0; padding: 12px 16px; position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }' +
+    '.header-left { display: flex; align-items: center; gap: 12px; }' +
+    '.header-left img { height: 48px; width: auto; }' +
+    '.header h1 { margin: 0; font-size: 20px; color: #1a73e8; line-height: 1.2; }' +
+    '.header p { margin: 4px 0 0; font-size: 12px; color: #5f6368; }' +
     '.user-info { display: flex; align-items: center; gap: 12px; }' +
     '.logout-btn { background: #f1f3f4; color: #5f6368; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 600; }' +
     '.hero { background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%); color: white; padding: 40px 20px; text-align: center; }' +
@@ -435,14 +443,18 @@ app.get('/jobs', requireLogin, async (req, res) => {
     '.whatsapp-btn { background: #25d366; }' +
     '.whatsapp-btn:hover { background: #1da851; }' +
     '.footer { background: #202124; color: #e8eaed; padding: 40px 20px; margin-top: 60px; text-align: center; }' +
-    '.ad-container { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); text-align: center; min-height: 280px; }' +
+    '.ad-container { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0,0,0.1); text-align: center; min-height: 280px; }' +
     '.footer-links { margin-top: 20px; }' +
     '.footer-links a { color: #8ab4f8; text-decoration: none; margin: 0 10px; font-size: 14px; }' +
+    '@media (max-width: 600px) {.header-left img { height: 40px; }.header h1 { font-size: 18px; }.header p { font-size: 11px; } }' +
     ' </style>' +
     '</head>' +
     '<body>' +
     ' <div class="header">' +
+    ' <div class="header-left">' +
+    ' <img src="https://upload.wikimedia.org/wikipedia/commons/3/3e/Coat_of_arms_of_Uganda.svg" alt="Uganda Coat of Arms">' +
     ' <div><h1>EmmieTech Global Recruitment</h1><p>Licensed Agency | Uganda → UAE, Saudi, Qatar, Canada, UK, USA, Germany, Australia</p></div>' +
+    ' </div>' +
     ' <div class="user-info"><span>Hi, ' + userName + '</span><a href="/logout" class="logout-btn">Logout</a></div>' +
     ' </div>' +
     ' <div class="hero">' +
