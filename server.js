@@ -16,8 +16,8 @@ const ADSENSE_PUBLISHER_ID = 'ca-pub-1637256996790764';
 const ADSENSE_SLOT_ID = '1234567890';
 const IPINFO_KEY = process.env.IPINFO_KEY || '';
 
-// WORKING UGANDA COAT OF ARMS URL - HOSTED ON GITHUB CDN
-const UGANDA_LOGO = 'https://raw.githubusercontent.com/hampusborgos/country-flags/main/png250px/ug.png';
+// UGANDA FLAG SVG - EMBEDDED. NO EXTERNAL REQUESTS. WORKS 100%
+const UGANDA_LOGO = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 800'%3E%3Crect width='1200' height='133.33' fill='%23000'/%3E%3Crect y='133.33' width='1200' height='133.33' fill='%23FC0'/%3E%3Crect y='266.66' width='1200' height='133.33' fill='%23D90000'/%3E%3Crect y='399.99' width='1200' height='133.33' fill='%23000'/%3E%3Crect y='533.32' width='1200' height='133.33' fill='%23FC0'/%3E%3Crect y='666.65' width='1200' height='133.35' fill='%23D90000'/%3E%3Ccircle cx='600' cy='400' r='100' fill='%23fff'/%3E%3Cpath d='M600 320c-44.183 0-80 35.817-80 80s35.817 80 80 80 80-35.817 80-80-35.817-80-80-80zm-50 90l20-40 20 40-20-40zm60 0l-20-40-20 40 20-40z' fill='%23D90000'/%3E%3C/svg%3E`;
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -302,7 +302,7 @@ app.get('/', (req, res) => {
     '<body>' +
     ' <div class="auth-container">' +
     ' <div class="logo-header">' +
-    ' <img src="' + UGANDA_LOGO + '" alt="Uganda Flag">' +
+    ' <img src="' + UGANDA_LOGO + '" alt="Uganda">' +
     ' <h1>EmmieTech Global</h1>' +
     ' </div>' +
     ' <p>Access verified high-paying jobs abroad. Free for candidates.</p>' +
@@ -426,7 +426,7 @@ app.get('/jobs', requireLogin, async (req, res) => {
     '.apply-btn:hover { background: #1557b0; }' +
     '.whatsapp-btn { background: #25d366; }' +
     '.whatsapp-btn:hover { background: #1da851; }' +
-        '.footer { background: #202124; color: #e8eaed; padding: 40px 20px; margin-top: 60px; text-align: center; }' +
+    '.footer { background: #202124; color: #e8eaed; padding: 40px 20px; margin-top: 60px; text-align: center; }' +
     '.ad-container { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); text-align: center; min-height: 280px; }' +
     '.footer-links { margin-top: 20px; }' +
     '.footer-links a { color: #8ab4f8; text-decoration: none; margin: 0 10px; font-size: 14px; }' +
