@@ -16,6 +16,9 @@ const ADSENSE_PUBLISHER_ID = 'ca-pub-1637256996790764';
 const ADSENSE_SLOT_ID = '1234567890';
 const IPINFO_KEY = process.env.IPINFO_KEY || '';
 
+// WORKING UGANDA COAT OF ARMS URL - HOSTED ON GITHUB CDN
+const UGANDA_LOGO = 'https://raw.githubusercontent.com/hampusborgos/country-flags/main/png250px/ug.png';
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false }
@@ -299,7 +302,7 @@ app.get('/', (req, res) => {
     '<body>' +
     ' <div class="auth-container">' +
     ' <div class="logo-header">' +
-    ' <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Coat_of_arms_of_Uganda.svg/240px-Coat_of_arms_of_Uganda.svg.png" alt="Uganda Coat of Arms">' +
+    ' <img src="' + UGANDA_LOGO + '" alt="Uganda Flag">' +
     ' <h1>EmmieTech Global</h1>' +
     ' </div>' +
     ' <p>Access verified high-paying jobs abroad. Free for candidates.</p>' +
@@ -423,8 +426,8 @@ app.get('/jobs', requireLogin, async (req, res) => {
     '.apply-btn:hover { background: #1557b0; }' +
     '.whatsapp-btn { background: #25d366; }' +
     '.whatsapp-btn:hover { background: #1da851; }' +
-    '.footer { background: #202124; color: #e8eaed; padding: 40px 20px; margin-top: 60px; text-align: center; }' +
-    '.ad-container { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); text-align: center; min-height: 280px;  }' +
+        '.footer { background: #202124; color: #e8eaed; padding: 40px 20px; margin-top: 60px; text-align: center; }' +
+    '.ad-container { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); text-align: center; min-height: 280px; }' +
     '.footer-links { margin-top: 20px; }' +
     '.footer-links a { color: #8ab4f8; text-decoration: none; margin: 0 10px; font-size: 14px; }' +
     '@media (max-width: 600px) {.header-left img { height: 40px; }.header h1 { font-size: 18px; }.header p { font-size: 11px; } }' +
@@ -433,7 +436,7 @@ app.get('/jobs', requireLogin, async (req, res) => {
     '<body>' +
     ' <div class="header">' +
     ' <div class="header-left">' +
-    ' <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Coat_of_arms_of_Uganda.svg/240px-Coat_of_arms_of_Uganda.svg.png" alt="Uganda Coat of Arms">' +
+    ' <img src="' + UGANDA_LOGO + '" alt="Uganda Flag">' +
     ' <div><h1>EmmieTech Global Recruitment</h1><p>Licensed Agency | Uganda → UAE, Saudi, Qatar, Canada, UK, USA, Germany, Australia</p></div>' +
     ' </div>' +
     ' <div class="user-info"><span>Hi, ' + userName + '</span><a href="/logout" class="logout-btn">Logout</a></div>' +
