@@ -90,6 +90,17 @@ async function getUserCountry(req) {
 }
 
 const AGENCY_JOBS = [
+  // UGANDA JOBS
+  { title: "Call Center Agent - Night Shift", company: "MTN Uganda", location: "Kampala, Uganda", salary: "UGX 800,000 - 1,200,000 + Bonus", url: "https://www.mtn.co.ug/careers", country: "Uganda", category: "Customer Service" },
+  { title: "Bank Teller", company: "Stanbic Bank Uganda", location: "Kampala, Uganda", salary: "UGX 1,500,000 - 2,000,000", url: "https://www.stanbicbank.co.ug/uganda/personal/about-us/careers", country: "Uganda", category: "Banking" },
+  { title: "Sales Executive - FMCG", company: "Unilever Uganda", location: "Kampala, Uganda", salary: "UGX 1,800,000 - 2,500,000 + Commission", url: "https://careers.unilever.com/", country: "Uganda", category: "Sales" },
+  { title: "Registered Nurse", company: "Mulago Hospital", location: "Kampala, Uganda", salary: "UGX 1,200,000 - 1,800,000", url: "https://health.go.ug/", country: "Uganda", category: "Healthcare" },
+  { title: "IT Support Technician", company: "Airtel Uganda", location: "Kampala, Uganda", salary: "UGX 1,500,000 - 2,200,000", url: "https://www.airtel.co.ug/careers", country: "Uganda", category: "Technology" },
+  { title: "Hotel Receptionist", company: "Sheraton Kampala Hotel", location: "Kampala, Uganda", salary: "UGX 700,000 - 1,000,000 + Tips", url: "https://careers.marriott.com/en", country: "Uganda", category: "Hospitality" },
+  { title: "Security Guard", company: "KK Security", location: "Kampala, Uganda", salary: "UGX 400,000 - 600,000 + Allowances", url: "https://kksecurity.com/careers/", country: "Uganda", category: "Security" },
+  { title: "Accountant - CPA Required", company: "PricewaterhouseCoopers Uganda", location: "Kampala, Uganda", salary: "UGX 3,000,000 - 5,000,000", url: "https://www.pwc.com/ug/en/careers.html", country: "Uganda", category: "Finance" },
+
+  // INTERNATIONAL JOBS
   { title: "Registered Nurse - H1B Sponsorship", company: "Mayo Clinic", location: "Rochester, USA", salary: "$85,000 - $110,000 + Relocation", url: "https://jobs.mayoclinic.org/search-jobs/nursing", country: "USA", category: "Healthcare" },
   { title: "Software Engineer - H1B Visa", company: "Amazon", location: "Seattle, USA", salary: "$130,000 - $180,000 + Stock", url: "https://www.amazon.jobs/en/search?base_query=software+engineer", country: "USA", category: "Technology" },
   { title: "Truck Driver - CDL Sponsorship", company: "Swift Transportation", location: "Texas, USA", salary: "$70,000 - $95,000 + Benefits", url: "https://www.swifttrans.com/careers", country: "USA", category: "Transport" },
@@ -141,7 +152,6 @@ async function fetchDailyJobs() {
                   job.title,
                   job.company?.display_name || 'Confidential',
                   job.location?.display_name || country.name,
-                  country.name,
                   job.salary_max? `${job.salary_min}-${job.salary_max} ${job.salary_is_predicted? '(est)' : ''}` : 'Competitive',
                   job.category?.label || 'General',
                   job.redirect_url
@@ -241,7 +251,7 @@ app.get('/about', (req, res) => {
   <p><strong>Licensed Recruitment Agency | Uganda → Global</strong></p>
   <p>EmmieTech Global Recruitment connects skilled professionals from Uganda and East Africa with high-paying job opportunities worldwide.</p>
   <h2>Countries We Recruit For:</h2>
-  <p>UAE, Saudi Arabia, Qatar, Canada, UK, USA, Germany, Australia</p>
+  <p>Uganda, UAE, Saudi Arabia, Qatar, Canada, UK, USA, Germany, Australia</p>
   <h2>Our Services:</h2>
   <ul>
     <li>100% Free for candidates - we never charge job seekers</li>
@@ -325,7 +335,7 @@ app.get('/', (req, res) => {
     ' <div class="form-group"><label>WhatsApp Number</label><div class="phone-group"><select id="countryCode"><option value="+256">🇺🇬 +256</option><option value="+254">🇰🇪 +254</option><option value="+255">🇹🇿 +255</option><option value="+250">🇷🇼 +250</option><option value="+971">🇦🇪 +971</option><option value="+966">🇸🇦 +966</option><option value="+974">🇶🇦 +974</option><option value="+1">🇨🇦 +1</option><option value="+44">🇬🇧 +44</option><option value="+91">🇮🇳 +91</option><option value="+234">🇳🇬 +234</option><option value="+233">🇬🇭 +233</option><option value="+27">🇿🇦 +27</option></select><input type="tel" id="phone" placeholder="776686096" required></div></div>' +
     ' <div class="form-group"><label>Password</label><input type="password" id="regPassword" minlength="6" required><div class="password-hint">Minimum 6 characters</div></div>' +
     ' <div class="form-group"><label>Confirm Password</label><input type="password" id="confirmPassword" minlength="6" required></div>' +
-    ' <div class="form-group"><label>Country Interest</label><select id="countryInterest" onchange="checkOtherCountry()" required><option value="">Select Country</option><option value="🇦🇪 UAE">🇦🇪 UAE</option><option value="🇨🇦 Canada">🇨🇦 Canada</option><option value="🇬🇧 UK">🇬🇧 UK</option><option value="🇸🇦 Saudi Arabia">🇸🇦 Saudi Arabia</option><option value="🇶🇦 Qatar">🇶🇦 Qatar</option><option value="🇺🇸 USA">🇺🇸 USA</option><option value="🇦🇺 Australia">🇦🇺 Australia</option><option value="🇩🇪 Germany">🇩🇪 Germany</option><option value="Others">Others</option></select></div>' +
+    ' <div class="form-group"><label>Country Interest</label><select id="countryInterest" onchange="checkOtherCountry()" required><option value="">Select Country</option><option value="🇺🇬 Uganda">🇺🇬 Uganda</option><option value="🇦🇪 UAE">🇦🇪 UAE</option><option value="🇨🇦 Canada">🇨🇦 Canada</option><option value="🇬🇧 UK">🇬🇧 UK</option><option value="🇸🇦 Saudi Arabia">🇸🇦 Saudi Arabia</option><option value="🇶🇦 Qatar">🇶🇦 Qatar</option><option value="🇺🇸 USA">🇺🇸 USA</option><option value="🇦🇺 Australia">🇦🇺 Australia</option><option value="🇩🇪 Germany">🇩🇪 Germany</option><option value="Others">Others</option></select></div>' +
     ' <div class="form-group" id="otherCountryGroup"><label>Specify Country</label><input type="text" id="otherCountry" placeholder="Enter your country"></div>' +
     ' <div class="form-group"><label>Skills</label><input type="text" id="skills" placeholder="e.g. Housekeeping, Security, Nursing" required></div>' +
     ' <button type="submit" class="btn">Create Free Account</button>' +
@@ -404,7 +414,7 @@ app.get('/jobs', requireLogin, async (req, res) => {
     ' body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; margin: 0; padding: 0; background: #f8f9fa; color: #202124; }' +
     '.header { background: #fff; border-bottom: 1px solid #dadce0; padding: 12px 16px; position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }' +
     '.header-left { display: flex; align-items: center; gap: 12px; }' +
-    '.logo-circle { width: 52px; height: 52px; border-radius: 50%; overflow: hidden; border: 2px solid #1a73e8; flex-shrink: 0; }' +
+    '.logo-circle { width: 52px;height: 52px; border-radius: 50%; overflow: hidden; border: 2px solid #1a73e8; flex-shrink: 0; }' +
     '.logo-circle img { width: 100%; height: 100%; object-fit: cover; }' +
     '.brand-text h1 { margin: 0; font-size: 18px; color: #1a73e8; line-height: 1.2; }' +
     '.brand-text p { margin: 2px 0 0; font-size: 11px; color: #5f6368; }' +
@@ -421,7 +431,7 @@ app.get('/jobs', requireLogin, async (req, res) => {
     '.search-buttons { display: flex; gap: 8px; }' +
     '#searchBtn { flex: 1; background: #1a73e8; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; }' +
     '#searchBtn:hover { background: #1557b0; }' +
-    '#clearBtn { flex:1; background: #f1f3f4; color: #5f6368; border: none; padding: 12px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; }' +
+    '#clearBtn { flex: 1; background: #f1f3f4; color: #5f6368; border: none; padding: 12px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; }' +
     '#clearBtn:hover { background: #e8eaed; }' +
     '.job-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }' +
     '.job-card { background: white; padding: 24px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: box-shadow 0.2s; position: relative; }' +
@@ -458,8 +468,8 @@ app.get('/jobs', requireLogin, async (req, res) => {
     ' <div class="container">' +
     ' <h2 id="jobs" style="margin: 0 0 20px 0;">Active Job Openings</h2>' +
     ' <div class="filters">' +
-    ' <select id="countryFilter"><option value="">All Countries</option><option value="UAE">UAE</option><option value="Canada">Canada</option><option value="UK">UK</option><option value="Saudi Arabia">Saudi Arabia</option><option value="Qatar">Qatar</option><option value="USA">USA</option><option value="Australia">Australia</option><option value="Germany">Germany</option></select>' +
-    ' <select id="categoryFilter"><option value="">All Categories</option><option value="Healthcare">Healthcare</option><option value="Technology">Technology</option><option value="Engineering">Engineering</option><option value="Construction">Construction</option><option value="Hospitality">Hospitality</option><option value="Security">Security</option><option value="Transport">Transport</option><option value="Mining">Mining</option><option value="Agriculture">Agriculture</option></select>' +
+    ' <select id="countryFilter"><option value="">All Countries</option><option value="Uganda">Uganda</option><option value="UAE">UAE</option><option value="Canada">Canada</option><option value="UK">UK</option><option value="Saudi Arabia">Saudi Arabia</option><option value="Qatar">Qatar</option><option value="USA">USA</option><option value="Australia">Australia</option><option value="Germany">Germany</option></select>' +
+    ' <select id="categoryFilter"><option value="">All Categories</option><option value="Healthcare">Healthcare</option><option value="Technology">Technology</option><option value="Engineering">Engineering</option><option value="Construction">Construction</option><option value="Hospitality">Hospitality</option><option value="Security">Security</option><option value="Transport">Transport</option><option value="Mining">Mining</option><option value="Agriculture">Agriculture</option><option value="Banking">Banking</option><option value="Sales">Sales</option><option value="Customer Service">Customer Service</option><option value="Finance">Finance</option></select>' +
     ' <div class="search-wrapper">' +
     ' <input type="text" id="searchInput" placeholder="Search job title, company..." />' +
     ' <div class="search-buttons">' +
@@ -561,7 +571,7 @@ app.get('/api/jobs', requireLogin, async (req, res) => {
   try {
     const userCountry = await getUserCountry(req);
 
-    const priorityCountries = ['UAE', 'Saudi Arabia', 'Qatar', 'Canada', 'UK', 'USA', 'Australia', 'Germany'];
+    const priorityCountries = ['Uganda', 'UAE', 'Saudi Arabia', 'Qatar', 'Canada', 'UK', 'USA', 'Australia', 'Germany'];
 
     const result = await pool.query(`
       SELECT *,
