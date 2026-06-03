@@ -14,6 +14,7 @@ const RAPIDAPI_KEY = '96a9c08353msh17930481ae22721p150e24jsn49eed442acdc';
 const YOUR_WHATSAPP = '+256 776 686 096';
 const ADSENSE_PUBLISHER_ID = 'ca-pub-1637256996790764';
 const ADSENSE_SLOT_ID = '1234567890';
+const IPINFO_KEY = process.env.IPINFO_KEY || ''; // Add to Render env vars
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -59,10 +60,32 @@ pool.query(`
   )
 `).catch(console.error);
 
-// Add unique constraint to prevent duplicate jobs by URL
 pool.query(`ALTER TABLE agency_jobs ADD CONSTRAINT unique_job_url UNIQUE (url)`).catch(e => {
   console.log('Constraint exists or table empty:', e.message);
 });
+
+// GET USER COUNTRY FROM IP
+async function getUserCountry(req) {
+  if (!IPINFO_KEY) return 'Uganda';
+  try {
+    const ip = req.headers['x-forwarded-for']?.split(',')[0] ||
+               req.socket.remoteAddress ||
+               '102.134.0.0';
+
+    const res = await fetch(`https://ipinfo.io/${ip}?token=${IPINFO_KEY}`);
+    const data = await res.json();
+
+    const countryMap = {
+      'UG': 'Uganda', 'KE': 'Kenya', 'TZ': 'Tanzania', 'RW': 'Rwanda',
+      'AE': 'UAE', 'SA': 'Saudi Arabia', 'QA': 'Qatar', 'US': 'USA',
+      'CA': 'Canada', 'GB': 'UK', 'DE': 'Germany', 'AU': 'Australia',
+      'NG': 'Nigeria', 'GH': 'Ghana', 'ZA': 'South Africa', 'IN': 'India'
+    };
+    return countryMap[data.country] || 'Other';
+  } catch {
+    return 'Uganda';
+  }
+}
 
 // VERIFIED HIGH-PAYING JOBS - FALLBACK IF API FAILS
 const AGENCY_JOBS = [
@@ -118,7 +141,6 @@ async function fetchDailyJobs() {
                   job.title,
                   job.company?.display_name || 'Confidential',
                   job.location?.display_name || country.name,
-                  country.name,
                   job.salary_max? `${job.salary_min}-${job.salary_max} ${job.salary_is_predicted? '(est)' : ''}` : 'Competitive',
                   job.category?.label || 'General',
                   job.redirect_url
@@ -149,6 +171,107 @@ function requireLogin(req, res, next) {
     res.redirect('/');
   }
 }
+
+app.get('/privacy', (req, res) => {
+  res.send(`
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Privacy Policy - EmmieTech Global Recruitment</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; line-height: 1.6; }
+    h1 { color: #1e40af; }
+    h2 { color: #374151; margin-top: 30px; }
+  </style>
+</head>
+<body>
+  <h1>Privacy Policy for EmmieTech Global Recruitment</h1>
+  <p><strong>Last updated: June 3, 2026</strong></p>
+
+  <h2>1. Information We Collect</h2>
+  <p>We collect information you provide directly to us, such as when you create an account or apply for jobs. This includes:</p>
+  <ul>
+    <li>Name and email address</li>
+    <li>Phone number and country</li>
+    <li>Resume/CV and job application data</li>
+    <li>IP address for geolocation to show relevant jobs</li>
+  </ul>
+
+  <h2>2. How We Use Your Information</h2>
+  <p>We use the information to:</p>
+  <ul>
+    <li>Match you with job opportunities</li>
+    <li>Communicate about your applications</li>
+    <li>Show jobs relevant to your location</li>
+    <li>Improve our services</li>
+  </ul>
+
+  <h2>3. Cookies and Advertising</h2>
+  <p>We use cookies to operate our service. Third party vendors, including Google, use cookies to serve ads based on your prior visits to our website or other websites.</p>
+  <p>Google's use of advertising cookies enables it and its partners to serve ads to you based on your visit to our sites and/or other sites on the Internet.</p>
+  <p>You may opt out of personalized advertising by visiting <a href="https://www.google.com/settings/ads">Google Ads Settings</a>.</p>
+
+  <h2>4. Google AdSense</h2>
+  <p>This site uses Google AdSense. AdSense uses cookies to serve ads. Google's use of the DART cookie enables it to serve ads to users based on their visit to our site and other sites on the Internet. Users may opt out of the use of the DART cookie by visiting the Google ad and content network privacy policy.</p>
+
+  <h2>5. Data Sharing</h2>
+  <p>We do not sell your personal data. We share your application data only with employers for jobs you apply to. We may share data with service providers like Render, Supabase, and IPinfo to operate this site.</p>
+
+  <h2>6. Data Security</h2>
+  <p>We use industry-standard security measures to protect your data. However, no method of transmission over the Internet is 100% secure.</p>
+
+  <h2>7. Your Rights</h2>
+  <p>You may request to access, update, or delete your personal data by contacting us.</p>
+
+  <h2>8. Contact Us</h2>
+  <p>For privacy questions, contact: <strong>emmietech.recruitment@gmail.com</strong></p>
+  <p>EmmieTech Global Recruitment, Licensed Agency, Uganda</p>
+
+  <p><a href="/">Back to Jobs</a></p>
+</body>
+</html>
+  `);
+});
+
+app.get('/about', (req, res) => {
+  res.send(`
+<!DOCTYPE html>
+<html>
+<head>
+  <title>About - EmmieTech Global Recruitment</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; line-height: 1.6; }
+    h1 { color: #1e40af; }
+  </style>
+</head>
+<body>
+  <h1>About EmmieTech Global Recruitment</h1>
+  <p><strong>Licensed Recruitment Agency | Uganda → Global</strong></p>
+
+  <p>EmmieTech Global Recruitment connects skilled professionals from Uganda and East Africa with high-paying job opportunities worldwide.</p>
+
+  <h2>Countries We Recruit For:</h2>
+  <p>UAE, Saudi Arabia, Qatar, Canada, UK, USA, Germany, Australia</p>
+
+  <h2>Our Services:</h2>
+  <ul>
+    <li>100% Free for candidates - we never charge job seekers</li>
+    <li>Visa sponsorship assistance</li>
+    <li>CV review and interview coaching</li>
+    <li>Direct employer connections</li>
+  </ul>
+
+  <h2>Contact</h2>
+  <p>Email: emmietech.recruitment@gmail.com</p>
+  <p>WhatsApp: ${YOUR_WHATSAPP}</p>
+
+  <p><a href="/">Browse Jobs</a> | <a href="/privacy">Privacy Policy</a></p>
+</body>
+</html>
+  `);
+});
 
 app.get('/', (req, res) => {
   if (req.session.userId) {
@@ -185,6 +308,8 @@ app.get('/', (req, res) => {
     '#registerForm { display: none; }' +
     '#otherCountryGroup { display: none; }' +
     '.password-hint { font-size: 12px; color: #5f6368; margin-top: 4px; }' +
+    '.footer-links { text-align: center; margin-top: 20px; font-size: 13px; }' +
+    '.footer-links a { color: #5f6368; text-decoration: none; margin: 0 10px; }' +
     ' </style>' +
     '</head>' +
     '<body>' +
@@ -214,6 +339,7 @@ app.get('/', (req, res) => {
     ' <div class="form-group"><label>Skills</label><input type="text" id="skills" placeholder="e.g. Housekeeping, Security, Nursing" required></div>' +
     ' <button type="submit" class="btn">Create Free Account</button>' +
     ' </form>' +
+    ' <div class="footer-links"><a href="/about">About</a><a href="/privacy">Privacy</a></div>' +
     ' </div>' +
     ' <script>' +
     ' function showLogin() {' +
@@ -310,6 +436,8 @@ app.get('/jobs', requireLogin, async (req, res) => {
     '.whatsapp-btn:hover { background: #1da851; }' +
     '.footer { background: #202124; color: #e8eaed; padding: 40px 20px; margin-top: 60px; text-align: center; }' +
     '.ad-container { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); text-align: center; min-height: 280px; }' +
+    '.footer-links { margin-top: 20px; }' +
+    '.footer-links a { color: #8ab4f8; text-decoration: none; margin: 0 10px; font-size: 14px; }' +
     ' </style>' +
     '</head>' +
     '<body>' +
@@ -318,8 +446,8 @@ app.get('/jobs', requireLogin, async (req, res) => {
     ' <div class="user-info"><span>Hi, ' + userName + '</span><a href="/logout" class="logout-btn">Logout</a></div>' +
     ' </div>' +
     ' <div class="hero">' +
-    ' <h2>High-Paying Jobs Worldwide</h2>' +
-    ' <p>$70,000 - $180,000+ salaries. Visa sponsorship available. 100% Free for candidates.</p>' +
+    ' <h2 id="heroTitle">High-Paying Jobs Worldwide</h2>' +
+    ' <p id="heroSubtitle">$70,000 - $180,000+ salaries. Visa sponsorship available. 100% Free for candidates.</p>' +
     ' </div>' +
     ' <div class="container">' +
     ' <h2 id="jobs" style="margin: 0 0 20px 0;">Active Job Openings</h2>' +
@@ -334,6 +462,7 @@ app.get('/jobs', requireLogin, async (req, res) => {
     ' <p><b>EmmieTech Global Recruitment Agency</b></p>' +
     ' <p>Kampala, Uganda | WhatsApp: ' + YOUR_WHATSAPP + '</p>' +
     ' <p>Licensed by Ministry of Gender, Labour & Social Development</p>' +
+    ' <div class="footer-links"><a href="/about">About Us</a><a href="/privacy">Privacy Policy</a></div>' +
     ' </div>' +
     ' <script>' +
     ' const WHATSAPP = "' + YOUR_WHATSAPP + '";' +
@@ -342,8 +471,13 @@ app.get('/jobs', requireLogin, async (req, res) => {
     ' let allJobs = ' + JSON.stringify(AGENCY_JOBS) + ';' +
     ' async function loadJobs() {' +
     ' const res = await fetch("/api/jobs");' +
-    ' const dbJobs = await res.json();' +
+    ' const data = await res.json();' +
+    ' const dbJobs = data.jobs;' +
+    ' const userCountry = data.userCountry;' +
     ' allJobs = [...dbJobs,...allJobs];' +
+    ' if (userCountry && userCountry!== "Other") {' +
+    ' document.getElementById("heroSubtitle").innerHTML = `Top jobs for ${userCountry} → UAE, Canada, UK, USA. 100% Free for candidates.`;' +
+    ' }' +
     ' renderJobs(allJobs);' +
     ' }' +
     ' function timeAgo(date) {' +
@@ -401,10 +535,27 @@ app.get('/jobs', requireLogin, async (req, res) => {
 
 app.get('/api/jobs', requireLogin, async (req, res) => {
   try {
-        const result = await pool.query(`SELECT * FROM agency_jobs WHERE status = 'active' ORDER BY created_at DESC LIMIT 500`);
-    res.json(result.rows);
+    const userCountry = await getUserCountry(req);
+
+    // Priority for East Africa: UAE, Saudi, Qatar, Canada, UK, USA
+    const priorityCountries = ['UAE', 'Saudi Arabia', 'Qatar', 'Canada', 'UK', 'USA', 'Australia', 'Germany'];
+
+    const result = await pool.query(`
+      SELECT *,
+        CASE
+          WHEN country = ANY($1) THEN 0
+          ELSE 1
+        END as priority
+      FROM agency_jobs
+      WHERE status = 'active'
+      ORDER BY priority, created_at DESC
+      LIMIT 500
+    `, [priorityCountries]);
+
+    res.json({ jobs: result.rows, userCountry });
   } catch (err) {
-    res.json([]);
+    console.error('Jobs API error:', err);
+    res.json({ jobs: [], userCountry: 'Uganda' });
   }
 });
 
