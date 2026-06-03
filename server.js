@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import pkg from 'pg';
 import fetch from 'node-fetch';
 import session from 'express-session';
+import * as cheerio from 'cheerio';
 
 const { Pool } = pkg;
 const app = express();
@@ -90,39 +91,106 @@ async function getUserCountry(req) {
 }
 
 const AGENCY_JOBS = [
-  // UGANDA JOBS
-  { title: "Call Center Agent - Night Shift", company: "MTN Uganda", location: "Kampala, Uganda", salary: "UGX 800,000 - 1,200,000 + Bonus", url: "https://www.mtn.co.ug/careers", country: "Uganda", category: "Customer Service" },
-  { title: "Bank Teller", company: "Stanbic Bank Uganda", location: "Kampala, Uganda", salary: "UGX 1,500,000 - 2,000,000", url: "https://www.stanbicbank.co.ug/uganda/personal/about-us/careers", country: "Uganda", category: "Banking" },
-  { title: "Sales Executive - FMCG", company: "Unilever Uganda", location: "Kampala, Uganda", salary: "UGX 1,800,000 - 2,500,000 + Commission", url: "https://careers.unilever.com/", country: "Uganda", category: "Sales" },
-  { title: "Registered Nurse", company: "Mulago Hospital", location: "Kampala, Uganda", salary: "UGX 1,200,000 - 1,800,000", url: "https://health.go.ug/", country: "Uganda", category: "Healthcare" },
-  { title: "IT Support Technician", company: "Airtel Uganda", location: "Kampala, Uganda", salary: "UGX 1,500,000 - 2,200,000", url: "https://www.airtel.co.ug/careers", country: "Uganda", category: "Technology" },
-  { title: "Hotel Receptionist", company: "Sheraton Kampala Hotel", location: "Kampala, Uganda", salary: "UGX 700,000 - 1,000,000 + Tips", url: "https://careers.marriott.com/en", country: "Uganda", category: "Hospitality" },
-  { title: "Security Guard", company: "KK Security", location: "Kampala, Uganda", salary: "UGX 400,000 - 600,000 + Allowances", url: "https://kksecurity.com/careers/", country: "Uganda", category: "Security" },
-  { title: "Accountant - CPA Required", company: "PricewaterhouseCoopers Uganda", location: "Kampala, Uganda", salary: "UGX 3,000,000 - 5,000,000", url: "https://www.pwc.com/ug/en/careers.html", country: "Uganda", category: "Finance" },
-
-  // INTERNATIONAL JOBS
+  // INTERNATIONAL JOBS - Backups if API fails
   { title: "Registered Nurse - H1B Sponsorship", company: "Mayo Clinic", location: "Rochester, USA", salary: "$85,000 - $110,000 + Relocation", url: "https://jobs.mayoclinic.org/search-jobs/nursing", country: "USA", category: "Healthcare" },
   { title: "Software Engineer - H1B Visa", company: "Amazon", location: "Seattle, USA", salary: "$130,000 - $180,000 + Stock", url: "https://www.amazon.jobs/en/search?base_query=software+engineer", country: "USA", category: "Technology" },
-  { title: "Truck Driver - CDL Sponsorship", company: "Swift Transportation", location: "Texas, USA", salary: "$70,000 - $95,000 + Benefits", url: "https://www.swifttrans.com/careers", country: "USA", category: "Transport" },
   { title: "Senior Caregiver - PR Pathway", company: "Government of Canada", location: "Toronto, Canada", salary: "CAD $55,000 + PR in 2 Years", url: "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/caregivers.html", country: "Canada", category: "Healthcare" },
-  { title: "Heavy Equipment Operator - LMIA", company: "Suncor Energy", location: "Alberta, Canada", salary: "CAD $95,000 + Housing", url: "https://www.suncor.com/en-ca/careers", country: "Canada", category: "Construction" },
-  { title: "IT Project Manager - Express Entry", company: "RBC Bank", location: "Toronto, Canada", salary: "CAD $100,000 - $140,000", url: "https://jobs.rbc.com/ca/en/search-results", country: "Canada", category: "Technology" },
   { title: "Senior Health Care Assistant - Visa Sponsorship", company: "NHS UK", location: "London, UK", salary: "£28,000 - £35,000 + NHS Benefits", url: "https://www.jobs.nhs.uk/candidate/search/results?language=en&searchFormType=main&keywords=healthcare+assistant", country: "UK", category: "Healthcare" },
-  { title: "Senior Chef - Skilled Worker Visa", company: "Marriott Hotels UK", location: "Manchester, UK", salary: "£32,000 - £45,000 + Accommodation", url: "https://careers.marriott.com/en", country: "UK", category: "Hospitality" },
   { title: "Executive Housekeeper - Dubai Hotels", company: "Emirates Group", location: "Dubai, UAE", salary: "AED 8,000 - 12,000 + Visa + Housing", url: "https://www.emiratesgroupcareers.com/search/?q=housekeeper", country: "UAE", category: "Hospitality" },
-  { title: "Security Manager - SIRA License", company: "G4S UAE", location: "Abu Dhabi, UAE", salary: "AED 10,000 - 15,000 + Benefits", url: "https://careers.g4s.com/en/search-results?keywords=manager", country: "UAE", category: "Security" },
   { title: "Construction Project Manager - NEOM", company: "Saudi Binladin Group", location: "Riyadh, Saudi Arabia", salary: "SAR 25,000 - 35,000 + Housing", url: "https://careers.sbg.com.sa/", country: "Saudi Arabia", category: "Construction" },
   { title: "Nurse - EU Blue Card Germany", company: "Charité Hospital Berlin", location: "Berlin, Germany", salary: "€50,000 - €65,000 + Benefits", url: "https://www.charite.de/en/career/", country: "Germany", category: "Healthcare" },
-  { title: "Mechanical Engineer - Blue Card", company: "BMW Group", location: "Munich, Germany", salary: "€70,000 - €95,000", url: "https://www.bmwgroup.jobs/de/en.html", country: "Germany", category: "Engineering" },
-  { title: "Aged Care Nurse - 482 Visa Sponsorship", company: "Bupa Australia", location: "Sydney, Australia", salary: "AUD $80,000 - $100,000 + Relocation", url: "https://careers.bupa.com.au/en", country: "Australia", category: "Healthcare" },
-  { title: "Mining Supervisor - 186 Visa", company: "Rio Tinto", location: "Perth, Australia", salary: "AUD $150,000 - $180,000 + FIFO", url: "https://www.riotinto.com/careers", country: "Australia", category: "Mining" },
-  { title: "Housekeeping Staff - Dubai Hotels", company: "Emirates Group", location: "Dubai, UAE", salary: "2000 AED + Visa + Accommodation", url: "https://www.emiratesgroupcareers.com/search/?q=housekeeping", country: "UAE", category: "Hospitality" },
-  { title: "Security Guard - SIRA License Provided", company: "G4S UAE", location: "Dubai, UAE", salary: "2500 AED + Benefits", url: "https://careers.g4s.com/en/search-results?keywords=guard", country: "UAE", category: "Security" },
-  { title: "Farm Worker - LMIA Approved", company: "Job Bank Canada", location: "Ontario, Canada", salary: "CAD 15/hr + Accommodation", url: "https://www.jobbank.gc.ca/jobsearch/jobsearch?searchstring=farm+worker", country: "Canada", category: "Agriculture" }
+  { title: "Aged Care Nurse - 482 Visa Sponsorship", company: "Bupa Australia", location: "Sydney, Australia", salary: "AUD $80,000 - $100,000 + Relocation", url: "https://careers.bupa.com.au/en", country: "Australia", category: "Healthcare" }
 ];
 
-async function fetchDailyJobs() {
-  console.log('Starting daily job fetch...');
+// SCRAPER: BrighterMonday Uganda
+async function scrapeBrighterMonday() {
+  console.log('Scraping BrighterMonday Uganda...');
+  let totalAdded = 0;
+  try {
+    const res = await fetch('https://www.brightermonday.co.ug/jobs', {
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
+    });
+    const html = await res.text();
+    const $ = cheerio.load(html);
+
+    const jobs = [];
+    $('.search-result').slice(0, 20).each((i, el) => {
+      const title = $(el).find('h3 a').text().trim();
+      const company = $(el).find('.search-result__job-meta.company-name').text().trim() || 'Confidential';
+      const location = $(el).find('.search-result__location').text().trim() || 'Kampala, Uganda';
+      const url = 'https://www.brightermonday.co.ug' + $(el).find('h3 a').attr('href');
+      const category = $(el).find('.search-result__job-meta.job-category').text().trim() || 'General';
+
+      if (title && url) {
+        jobs.push({ title, company, location, url, category, country: 'Uganda', salary: 'Competitive' });
+      }
+    });
+
+    for (const job of jobs) {
+      try {
+        await pool.query(
+          `INSERT INTO agency_jobs (title, company, location, country, salary, category, url)
+           VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+          [job.title, job.company, job.location, job.country, job.salary, job.category, job.url]
+        );
+        totalAdded++;
+      } catch (e) {
+        // Duplicate URL, skip
+      }
+    }
+    console.log(`BrighterMonday: Added ${totalAdded} jobs`);
+  } catch (err) {
+    console.log('BrighterMonday scrape failed:', err.message);
+  }
+  return totalAdded;
+}
+
+// SCRAPER: Fuzu Uganda
+async function scrapeFuzu() {
+  console.log('Scraping Fuzu Uganda...');
+  let totalAdded = 0;
+  try {
+    const res = await fetch('https://www.fuzu.com/jobs/uganda', {
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
+    });
+    const html = await res.text();
+    const $ = cheerio.load(html);
+
+    const jobs = [];
+    $('.job-card').slice(0, 20).each((i, el) => {
+      const title = $(el).find('.job-title').text().trim();
+      const company = $(el).find('.company-name').text().trim() || 'Confidential';
+      const location = $(el).find('.job-location').text().trim() || 'Kampala, Uganda';
+      const url = 'https://www.fuzu.com' + $(el).find('a').attr('href');
+      const category = 'General';
+
+      if (title && url) {
+        jobs.push({ title, company, location, url, category, country: 'Uganda', salary: 'Competitive' });
+      }
+    });
+
+    for (const job of jobs) {
+      try {
+        await pool.query(
+          `INSERT INTO agency_jobs (title, company, location, country, salary, category, url)
+           VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+          [job.title, job.company, job.location, job.country, job.salary, job.category, job.url]
+        );
+        totalAdded++;
+      } catch (e) {
+        // Duplicate URL, skip
+      }
+    }
+    console.log(`Fuzu: Added ${totalAdded} jobs`);
+  } catch (err) {
+    console.log('Fuzu scrape failed:', err.message);
+  }
+  return totalAdded;
+}
+
+// ADZUNA API: International jobs
+async function fetchAdzunaJobs() {
+  console.log('Fetching Adzuna jobs...');
   const countries = [
     { code: 'us', name: 'USA' },
     { code: 'ca', name: 'Canada' },
@@ -152,6 +220,7 @@ async function fetchDailyJobs() {
                   job.title,
                   job.company?.display_name || 'Confidential',
                   job.location?.display_name || country.name,
+                  country.name,
                   job.salary_max? `${job.salary_min}-${job.salary_max} ${job.salary_is_predicted? '(est)' : ''}` : 'Competitive',
                   job.category?.label || 'General',
                   job.redirect_url
@@ -167,7 +236,17 @@ async function fetchDailyJobs() {
       }
     }
   }
-  console.log(`Daily job fetch complete. Added ${totalAdded} new jobs.`);
+  console.log(`Adzuna: Added ${totalAdded} jobs`);
+  return totalAdded;
+}
+
+// MASTER FETCH: Runs all scrapers + APIs daily
+async function fetchDailyJobs() {
+  console.log('Starting daily job fetch...');
+  const adzunaCount = await fetchAdzunaJobs();
+  const bmCount = await scrapeBrighterMonday();
+  const fuzuCount = await scrapeFuzu();
+  console.log(`Daily fetch complete. Adzuna: ${adzunaCount}, BrighterMonday: ${bmCount}, Fuzu: ${fuzuCount}`);
 }
 
 fetchDailyJobs();
@@ -414,7 +493,7 @@ app.get('/jobs', requireLogin, async (req, res) => {
     ' body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; margin: 0; padding: 0; background: #f8f9fa; color: #202124; }' +
     '.header { background: #fff; border-bottom: 1px solid #dadce0; padding: 12px 16px; position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }' +
     '.header-left { display: flex; align-items: center; gap: 12px; }' +
-    '.logo-circle { width: 52px;height: 52px; border-radius: 50%; overflow: hidden; border: 2px solid #1a73e8; flex-shrink: 0; }' +
+    '.logo-circle { width: 52px; height: 52px; border-radius: 50%; overflow: hidden; border: 2px solid #1a73e8; flex-shrink: 0; }' +
     '.logo-circle img { width: 100%; height: 100%; object-fit: cover; }' +
     '.brand-text h1 { margin: 0; font-size: 18px; color: #1a73e8; line-height: 1.2; }' +
     '.brand-text p { margin: 2px 0 0; font-size: 11px; color: #5f6368; }' +
@@ -469,7 +548,7 @@ app.get('/jobs', requireLogin, async (req, res) => {
     ' <h2 id="jobs" style="margin: 0 0 20px 0;">Active Job Openings</h2>' +
     ' <div class="filters">' +
     ' <select id="countryFilter"><option value="">All Countries</option><option value="Uganda">Uganda</option><option value="UAE">UAE</option><option value="Canada">Canada</option><option value="UK">UK</option><option value="Saudi Arabia">Saudi Arabia</option><option value="Qatar">Qatar</option><option value="USA">USA</option><option value="Australia">Australia</option><option value="Germany">Germany</option></select>' +
-    ' <select id="categoryFilter"><option value="">All Categories</option><option value="Healthcare">Healthcare</option><option value="Technology">Technology</option><option value="Engineering">Engineering</option><option value="Construction">Construction</option><option value="Hospitality">Hospitality</option><option value="Security">Security</option><option value="Transport">Transport</option><option value="Mining">Mining</option><option value="Agriculture">Agriculture</option><option value="Banking">Banking</option><option value="Sales">Sales</option><option value="Customer Service">Customer Service</option><option value="Finance">Finance</option></select>' +
+    ' <select id="categoryFilter"><option value="">All Categories</option><option value="Healthcare">Healthcare</option><option value="Technology">Technology</option><option value="Engineering">Engineering</option><option value="Construction">Construction</option><option value="Hospitality">Hospitality</option><option value="Security">Security</option><option value="Transport">Transport</option><option value="Mining">Mining</option><option value="Agriculture">Agriculture</option><option value="Banking">Banking</option><option value="Sales">Sales</option><option value="Customer Service">Customer Service</option><option value="Finance">Finance</option><option value="General">General</option></select>' +
     ' <div class="search-wrapper">' +
     ' <input type="text" id="searchInput" placeholder="Search job title, company..." />' +
     ' <div class="search-buttons">' +
