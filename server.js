@@ -17,7 +17,7 @@ const ADSENSE_SLOT_ID = '1234567890';
 const IPINFO_KEY = process.env.IPINFO_KEY || '';
 
 // UGANDA FLAG SVG - EMBEDDED. WORKS 100%
-const UGANDA_LOGO = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 800'%3E%3Crect width='1200' height='133.33' fill='%23000'/%3E%3Crect y='133.33' width='1200' height='133.33' fill='%23FC0'/%3E%3Crect y='266.66' width='1200' height='133.33' fill='%23D90000'/%3E%3Crect y='399.99' width='1200' height='133.33' fill='%23000'/%3E%3Crect y='533.32' width='1200' height='133.33' fill='%23FC0'/%3E%3Crect y='666.65' width='1200' height='133.35' fill='%23D90000'/%3E%3Ccircle cx='600' cy='400' r='100' fill='%23fff'/%3E%3Cpath d='M600 320c-44.183 0-80 35.817-80 80s35.817 80 80-35.817 80-80-35.817-80-80-80zm-50 90l20-40 20 40-20-40zm60 0l-20-40-20 40 20-40z' fill='%23D90000'/%3E%3C/svg%3E`;
+const UGANDA_LOGO = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 800'%3E%3Crect width='1200' height='133.33' fill='%23000'/%3E%3Crect y='133.33' width='1200' height='133.33' fill='%23FC0'/%3E%3Crect y='266.66' width='1200' height='133.33' fill='%23D90000'/%3E%3Crect y='399.99' width='1200' height='133.33' fill='%23000'/%3E%3Crect y='533.32' width='1200' height='133.33' fill='%23FC0'/%3E%3Crect y='666.65' width='1200' height='133.35' fill='%23D90000'/%3E%3Ccircle cx='600' cy='400' r='100' fill='%23fff'/%3E%3Cpath d='M600 320c-44.183 0-80 35.817-80 80s35.817 80 80 80 80-35.817 80-80-35.817-80-80-80zm-50 90l20-40 20 40-20-40zm60 0l-20-40-20 40 20-40z' fill='%23D90000'/%3E%3C/svg%3E`;
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -141,6 +141,7 @@ async function fetchDailyJobs() {
                   job.title,
                   job.company?.display_name || 'Confidential',
                   job.location?.display_name || country.name,
+                  country.name,
                   job.salary_max? `${job.salary_min}-${job.salary_max} ${job.salary_is_predicted? '(est)' : ''}` : 'Competitive',
                   job.category?.label || 'General',
                   job.redirect_url
@@ -275,7 +276,8 @@ app.get('/', (req, res) => {
     ' body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; margin: 0; padding: 0; background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; }' +
     '.auth-container { background: white; padding: 40px; border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.2); width: 90%; max-width: 420px; }' +
     '.logo-header { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 8px; }' +
-    '.logo-header img { height: 40px; width: auto; }' +
+    '.logo-header.logo-circle { width: 48px; height: 48px; border-radius: 50%; overflow: hidden; border: 2px solid #1a73e8; }' +
+    '.logo-header.logo-circle img { width: 100%; height: 100%; object-fit: cover; }' +
     '.logo-header h1 { margin: 0; font-size: 24px; color: #1a73e8; }' +
     '.auth-container p { margin: 0 0 24px 0; color: #5f6368; text-align: center; font-size: 14px; }' +
     '.tabs { display: flex; margin-bottom: 24px; border-bottom: 2px solid #f1f3f4; }' +
@@ -301,7 +303,7 @@ app.get('/', (req, res) => {
     '<body>' +
     ' <div class="auth-container">' +
     ' <div class="logo-header">' +
-    ' <img src="' + UGANDA_LOGO + '" alt="Uganda">' +
+    ' <div class="logo-circle"><img src="' + UGANDA_LOGO + '" alt="Uganda"></div>' +
     ' <h1>EmmieTech Global</h1>' +
     ' </div>' +
     ' <p>Access verified high-paying jobs abroad. Free for candidates.</p>' +
@@ -402,9 +404,10 @@ app.get('/jobs', requireLogin, async (req, res) => {
     ' body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; margin: 0; padding: 0; background: #f8f9fa; color: #202124; }' +
     '.header { background: #fff; border-bottom: 1px solid #dadce0; padding: 12px 16px; position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }' +
     '.header-left { display: flex; align-items: center; gap: 12px; }' +
-    '.header-left img { height: 48px; width: auto; }' +
-    '.header h1 { margin: 0; font-size: 20px; color: #1a73e8; line-height: 1.2; }' +
-    '.header p { margin: 4px 0 0; font-size: 12px; color: #5f6368; }' +
+    '.logo-circle { width: 52px; height: 52px; border-radius: 50%; overflow: hidden; border: 2px solid #1a73e8; flex-shrink: 0; }' +
+    '.logo-circle img { width: 100%; height: 100%; object-fit: cover; }' +
+    '.brand-text h1 { margin: 0; font-size: 18px; color: #1a73e8; line-height: 1.2; }' +
+    '.brand-text p { margin: 2px 0 0; font-size: 11px; color: #5f6368; }' +
     '.user-info { display: flex; align-items: center; gap: 12px; }' +
     '.logout-btn { background: #f1f3f4; color: #5f6368; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 600; }' +
     '.hero { background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%); color: white; padding: 40px 20px; text-align: center; }' +
@@ -418,10 +421,10 @@ app.get('/jobs', requireLogin, async (req, res) => {
     '.search-buttons { display: flex; gap: 8px; }' +
     '#searchBtn { flex: 1; background: #1a73e8; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; }' +
     '#searchBtn:hover { background: #1557b0; }' +
-    '#clearBtn { flex: 1; background: #f1f3f4; color: #5f6368; border: none; padding: 12px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; }' +
+    '#clearBtn { flex:1; background: #f1f3f4; color: #5f6368; border: none; padding: 12px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; }' +
     '#clearBtn:hover { background: #e8eaed; }' +
     '.job-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }' +
-    '.job-card { background: white; padding: 24px; border-radius: 12px; box-shadow:0 1px 3px rgba(0,0,0,0.1); transition: box-shadow 0.2s; position: relative; }' +
+    '.job-card { background: white; padding: 24px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: box-shadow 0.2s; position: relative; }' +
     '.job-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.15); }' +
     '.job-card h3 { margin: 0 0 8px 0; color: #1a73e8; font-size: 18px; }' +
     '.job-meta { margin: 0 0 12px 0; color: #5f6368; font-size: 14px; }' +
@@ -437,14 +440,14 @@ app.get('/jobs', requireLogin, async (req, res) => {
     '.footer-links { margin-top: 20px; }' +
     '.footer-links a { color: #8ab4f8; text-decoration: none; margin: 0 10px; font-size: 14px; }' +
     '.no-results { text-align: center; padding: 40px; color: #5f6368; }' +
-    '@media (max-width: 600px) {.header-left img { height: 40px; }.header h1 { font-size: 18px; }.header p { font-size: 11px; } }' +
+    '@media (max-width: 600px) {.logo-circle { width: 44px; height: 44px; }.brand-text h1 { font-size: 16px; }.brand-text p { font-size: 10px; } }' +
     ' </style>' +
     '</head>' +
     '<body>' +
     ' <div class="header">' +
     ' <div class="header-left">' +
-    ' <img src="' + UGANDA_LOGO + '" alt="Uganda Flag">' +
-    ' <div><h1>EmmieTech Global Recruitment</h1><p>Licensed Agency | Uganda → UAE, Saudi, Qatar, Canada, UK, USA, Germany, Australia</p></div>' +
+    ' <div class="logo-circle"><img src="' + UGANDA_LOGO + '" alt="EmmieTech Logo"></div>' +
+    ' <div class="brand-text"><h1>EmmieTech Global</h1><p>Licensed Agency | Uganda → Global</p></div>' +
     ' </div>' +
     ' <div class="user-info"><span>Hi, ' + userName + '</span><a href="/logout" class="logout-btn">Logout</a></div>' +
     ' </div>' +
