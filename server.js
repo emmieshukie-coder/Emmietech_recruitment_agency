@@ -16,7 +16,7 @@ const ADSENSE_PUBLISHER_ID = 'ca-pub-1637256996790764';
 const ADSENSE_SLOT_ID = '1234567890';
 const IPINFO_KEY = process.env.IPINFO_KEY || '';
 
-// UGANDA FLAG SVG - EMBEDDED. NO EXTERNAL REQUESTS. WORKS 100%
+// UGANDA FLAG SVG - EMBEDDED. WORKS 100%
 const UGANDA_LOGO = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 800'%3E%3Crect width='1200' height='133.33' fill='%23000'/%3E%3Crect y='133.33' width='1200' height='133.33' fill='%23FC0'/%3E%3Crect y='266.66' width='1200' height='133.33' fill='%23D90000'/%3E%3Crect y='399.99' width='1200' height='133.33' fill='%23000'/%3E%3Crect y='533.32' width='1200' height='133.33' fill='%23FC0'/%3E%3Crect y='666.65' width='1200' height='133.35' fill='%23D90000'/%3E%3Ccircle cx='600' cy='400' r='100' fill='%23fff'/%3E%3Cpath d='M600 320c-44.183 0-80 35.817-80 80s35.817 80 80 80 80-35.817 80-80-35.817-80-80-80zm-50 90l20-40 20 40-20-40zm60 0l-20-40-20 40 20-40z' fill='%23D90000'/%3E%3C/svg%3E`;
 
 const pool = new Pool({
@@ -412,8 +412,14 @@ app.get('/jobs', requireLogin, async (req, res) => {
     '.hero h2 { font-size: 28px; margin: 0 0 12px 0; font-weight: 700; }' +
     '.hero p { font-size: 16px; opacity: 0.95; margin: 0; }' +
     '.container { max-width: 1200px; margin: 32px auto; padding: 0 20px; }' +
-    '.filters { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }' +
-    '.filters select,.filters input { padding: 10px 14px; border-radius: 8px; border: 1px solid #dadce0; font-size: 14px; }' +
+    '.filters { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; align-items: center; }' +
+    '.filters select { padding: 10px 14px; border-radius: 8px; border: 1px solid #dadce0; font-size: 14px; }' +
+    '.search-wrapper { display: flex; gap: 8px; flex: 1; min-width: 280px; }' +
+    '.search-wrapper input { flex: 1; padding: 10px 14px; border-radius: 8px; border: 1px solid #dadce0; font-size: 14px; }' +
+    '#searchBtn { background: #1a73e8; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; white-space: nowrap; }' +
+    '#searchBtn:hover { background: #1557b0; }' +
+    '#clearBtn { background: #f1f3f4; color: #5f6368; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; white-space: nowrap; }' +
+    '#clearBtn:hover { background: #e8eaed; }' +
     '.job-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }' +
     '.job-card { background: white; padding: 24px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: box-shadow 0.2s; position: relative; }' +
     '.job-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.15); }' +
@@ -430,7 +436,8 @@ app.get('/jobs', requireLogin, async (req, res) => {
     '.ad-container { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); text-align: center; min-height: 280px; }' +
     '.footer-links { margin-top: 20px; }' +
     '.footer-links a { color: #8ab4f8; text-decoration: none; margin: 0 10px; font-size: 14px; }' +
-    '@media (max-width: 600px) {.header-left img { height: 40px; }.header h1 { font-size: 18px; }.header p { font-size: 11px; } }' +
+    '.no-results { text-align: center; padding: 40px; color: #5f6368; }' +
+    '@media (max-width: 600px) {.header-left img { height: 40px; }.header h1 { font-size: 18px; }.header p { font-size: 11px; }.search-wrapper { min-width: 100%; } }' +
     ' </style>' +
     '</head>' +
     '<body>' +
@@ -450,7 +457,11 @@ app.get('/jobs', requireLogin, async (req, res) => {
     ' <div class="filters">' +
     ' <select id="countryFilter"><option value="">All Countries</option><option value="UAE">UAE</option><option value="Canada">Canada</option><option value="UK">UK</option><option value="Saudi Arabia">Saudi Arabia</option><option value="Qatar">Qatar</option><option value="USA">USA</option><option value="Australia">Australia</option><option value="Germany">Germany</option></select>' +
     ' <select id="categoryFilter"><option value="">All Categories</option><option value="Healthcare">Healthcare</option><option value="Technology">Technology</option><option value="Engineering">Engineering</option><option value="Construction">Construction</option><option value="Hospitality">Hospitality</option><option value="Security">Security</option><option value="Transport">Transport</option><option value="Mining">Mining</option><option value="Agriculture">Agriculture</option></select>' +
-    ' <input type="text" id="searchInput" placeholder="Search job title..." />' +
+    ' <div class="search-wrapper">' +
+    ' <input type="text" id="searchInput" placeholder="Search job title, company..." />' +
+    ' <button id="searchBtn" onclick="filterJobs()">Search</button>' +
+    ' <button id="clearBtn" onclick="clearFilters()">Clear</button>' +
+    ' </div>' +
     ' </div>' +
     ' <div id="jobGrid" class="job-grid"></div>' +
     ' </div>' +
@@ -489,6 +500,10 @@ app.get('/jobs', requireLogin, async (req, res) => {
     ' return new Date(date).toLocaleDateString();' +
     ' }' +
     ' function renderJobs(jobs) {' +
+    ' if (jobs.length === 0) {' +
+    ' document.getElementById("jobGrid").innerHTML = `<div class="no-results"><h3>No jobs found</h3><p>Try adjusting your filters or search terms</p></div>`;' +
+    ' return;' +
+    ' }' +
     ' document.getElementById("jobGrid").innerHTML = jobs.map((j, index) => {' +
     ' const isHighPay = j.salary.includes("$") || j.salary.includes("€") || j.salary.includes("AUD") || j.salary.includes("SAR 2") || j.salary.includes("AED 8") || j.salary.includes("AED 10");' +
     ' const highPayBadge = isHighPay? `<div class="high-pay-badge">💰 HIGH PAY</div>` : "";' +
@@ -519,9 +534,17 @@ app.get('/jobs', requireLogin, async (req, res) => {
     ' if (search) filtered = filtered.filter(j => j.title.toLowerCase().includes(search) || j.company.toLowerCase().includes(search));' +
     ' renderJobs(filtered);' +
     ' }' +
+    ' function clearFilters() {' +
+    ' document.getElementById("countryFilter").value = "";' +
+    ' document.getElementById("categoryFilter").value = "";' +
+    ' document.getElementById("searchInput").value = "";' +
+    ' renderJobs(allJobs);' +
+    ' }' +
     ' document.getElementById("countryFilter").addEventListener("change", filterJobs);' +
     ' document.getElementById("categoryFilter").addEventListener("change", filterJobs);' +
-    ' document.getElementById("searchInput").addEventListener("input", filterJobs);' +
+    ' document.getElementById("searchInput").addEventListener("keypress", function(e) {' +
+    ' if (e.key === "Enter") filterJobs();' +
+    ' });' +
     ' loadJobs();' +
     ' <\/script>' +
     ' </body>' +
