@@ -17,7 +17,7 @@ const ADSENSE_SLOT_ID = '1234567890';
 const IPINFO_KEY = process.env.IPINFO_KEY || '';
 
 // UGANDA FLAG SVG - EMBEDDED. WORKS 100%
-const UGANDA_LOGO = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 800'%3E%3Crect width='1200' height='133.33' fill='%23000'/%3E%3Crect y='133.33' width='1200' height='133.33' fill='%23FC0'/%3E%3Crect y='266.66' width='1200' height='133.33' fill='%23D90000'/%3E%3Crect y='399.99' width='1200' height='133.33' fill='%23000'/%3E%3Crect y='533.32' width='1200' height='133.33' fill='%23FC0'/%3E%3Crect y='666.65' width='1200' height='133.35' fill='%23D90000'/%3E%3Ccircle cx='600' cy='400' r='100' fill='%23fff'/%3E%3Cpath d='M600 320c-44.183 0-80 35.817-80 80s35.817 80 80 80 80-35.817 80-80-35.817-80-80-80zm-50 90l20-40 20 40-20-40zm60 0l-20-40-20 40 20-40z' fill='%23D90000'/%3E%3C/svg%3E`;
+const UGANDA_LOGO = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 800'%3E%3Crect width='1200' height='133.33' fill='%23000'/%3E%3Crect y='133.33' width='1200' height='133.33' fill='%23FC0'/%3E%3Crect y='266.66' width='1200' height='133.33' fill='%23D90000'/%3E%3Crect y='399.99' width='1200' height='133.33' fill='%23000'/%3E%3Crect y='533.32' width='1200' height='133.33' fill='%23FC0'/%3E%3Crect y='666.65' width='1200' height='133.35' fill='%23D90000'/%3E%3Ccircle cx='600' cy='400' r='100' fill='%23fff'/%3E%3Cpath d='M600 320c-44.183 0-80 35.817-80 80s35.817 80 80-35.817 80-80-35.817-80-80-80zm-50 90l20-40 20 40-20-40zm60 0l-20-40-20 40 20-40z' fill='%23D90000'/%3E%3C/svg%3E`;
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -141,7 +141,6 @@ async function fetchDailyJobs() {
                   job.title,
                   job.company?.display_name || 'Confidential',
                   job.location?.display_name || country.name,
-                  country.name,
                   job.salary_max? `${job.salary_min}-${job.salary_max} ${job.salary_is_predicted? '(est)' : ''}` : 'Competitive',
                   job.category?.label || 'General',
                   job.redirect_url
@@ -412,16 +411,17 @@ app.get('/jobs', requireLogin, async (req, res) => {
     '.hero h2 { font-size: 28px; margin: 0 0 12px 0; font-weight: 700; }' +
     '.hero p { font-size: 16px; opacity: 0.95; margin: 0; }' +
     '.container { max-width: 1200px; margin: 32px auto; padding: 0 20px; }' +
-    '.filters { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; align-items: center; }' +
-    '.filters select { padding: 10px 14px; border-radius: 8px; border: 1px solid #dadce0; font-size: 14px; }' +
-    '.search-wrapper { display: flex; gap: 8px; flex: 1; min-width: 280px; }' +
-    '.search-wrapper input { flex: 1; padding: 10px 14px; border-radius: 8px; border: 1px solid #dadce0; font-size: 14px; }' +
-    '#searchBtn { background: #1a73e8; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; white-space: nowrap; }' +
+    '.filters { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }' +
+    '.filters select { padding: 10px 14px; border-radius: 8px; border: 1px solid #dadce0; font-size: 14px; flex: 1; min-width: 140px; }' +
+    '.search-wrapper { display: flex; gap: 8px; width: 100%; flex-direction: column; }' +
+    '.search-wrapper input { width: 100%; padding: 12px 14px; border-radius: 8px; border: 1px solid #dadce0; font-size: 14px; }' +
+    '.search-buttons { display: flex; gap: 8px; }' +
+    '#searchBtn { flex: 1; background: #1a73e8; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; }' +
     '#searchBtn:hover { background: #1557b0; }' +
-    '#clearBtn { background: #f1f3f4; color: #5f6368; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; white-space: nowrap; }' +
+    '#clearBtn { flex: 1; background: #f1f3f4; color: #5f6368; border: none; padding: 12px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; }' +
     '#clearBtn:hover { background: #e8eaed; }' +
     '.job-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }' +
-    '.job-card { background: white; padding: 24px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: box-shadow 0.2s; position: relative; }' +
+    '.job-card { background: white; padding: 24px; border-radius: 12px; box-shadow:0 1px 3px rgba(0,0,0,0.1); transition: box-shadow 0.2s; position: relative; }' +
     '.job-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.15); }' +
     '.job-card h3 { margin: 0 0 8px 0; color: #1a73e8; font-size: 18px; }' +
     '.job-meta { margin: 0 0 12px 0; color: #5f6368; font-size: 14px; }' +
@@ -437,7 +437,7 @@ app.get('/jobs', requireLogin, async (req, res) => {
     '.footer-links { margin-top: 20px; }' +
     '.footer-links a { color: #8ab4f8; text-decoration: none; margin: 0 10px; font-size: 14px; }' +
     '.no-results { text-align: center; padding: 40px; color: #5f6368; }' +
-    '@media (max-width: 600px) {.header-left img { height: 40px; }.header h1 { font-size: 18px; }.header p { font-size: 11px; }.search-wrapper { min-width: 100%; } }' +
+    '@media (max-width: 600px) {.header-left img { height: 40px; }.header h1 { font-size: 18px; }.header p { font-size: 11px; } }' +
     ' </style>' +
     '</head>' +
     '<body>' +
@@ -459,8 +459,10 @@ app.get('/jobs', requireLogin, async (req, res) => {
     ' <select id="categoryFilter"><option value="">All Categories</option><option value="Healthcare">Healthcare</option><option value="Technology">Technology</option><option value="Engineering">Engineering</option><option value="Construction">Construction</option><option value="Hospitality">Hospitality</option><option value="Security">Security</option><option value="Transport">Transport</option><option value="Mining">Mining</option><option value="Agriculture">Agriculture</option></select>' +
     ' <div class="search-wrapper">' +
     ' <input type="text" id="searchInput" placeholder="Search job title, company..." />' +
+    ' <div class="search-buttons">' +
     ' <button id="searchBtn" onclick="filterJobs()">Search</button>' +
     ' <button id="clearBtn" onclick="clearFilters()">Clear</button>' +
+    ' </div>' +
     ' </div>' +
     ' </div>' +
     ' <div id="jobGrid" class="job-grid"></div>' +
