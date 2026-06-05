@@ -423,6 +423,9 @@ app.get('/', (req, res) => {
     '.password-hint { font-size: 12px; color: #5f6368; margin-top: 4px; }' +
     '.footer-links { text-align: center; margin-top: 20px; font-size: 13px; }' +
     '.footer-links a { color: #5f6368; text-decoration: none; margin: 0 10px; }' +
+    '.password-wrapper { position: relative; }' +
+    '.password-wrapper input { padding-right: 45px; }' +
+    '.toggle-password { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; user-select: none; font-size: 18px; }' +
     ' </style>' +
     '</head>' +
     '<body>' +
@@ -440,7 +443,7 @@ app.get('/', (req, res) => {
     ' <div id="success" class="success"></div>' +
     ' <form id="loginForm" onsubmit="handleLogin(event)">' +
     ' <div class="form-group"><label>Email</label><input type="email" id="loginEmail" required></div>' +
-    ' <div class="form-group"><label>Password</label><input type="password" id="loginPassword" required></div>' +
+    ' <div class="form-group"><label>Password</label><div class="password-wrapper"><input type="password" id="loginPassword" required><span class="toggle-password" onclick="togglePassword(\'loginPassword\', this)">👁️</span></div></div>' +
     ' <button type="submit" class="btn">Login to View Jobs</button>' +
     ' </form>' +
     ' <form id="registerForm" onsubmit="handleRegister(event)">' +
@@ -448,8 +451,8 @@ app.get('/', (req, res) => {
     ' <div class="form-group"><label>Last Name</label><input type="text" id="lastName" required></div>' +
     ' <div class="form-group"><label>Email</label><input type="email" id="regEmail" required></div>' +
     ' <div class="form-group"><label>WhatsApp Number</label><div class="phone-group"><select id="countryCode"><option value="+256">🇺🇬 +256</option><option value="+254">🇰🇪 +254</option><option value="+255">🇹🇿 +255</option><option value="+250">🇷🇼 +250</option><option value="+971">🇦🇪 +971</option><option value="+966">🇸🇦 +966</option><option value="+974">🇶🇦 +974</option><option value="+1">🇨🇦 +1</option><option value="+44">🇬🇧 +44</option><option value="+91">🇮🇳 +91</option><option value="+234">🇳🇬 +234</option><option value="+233">🇬🇭 +233</option><option value="+27">🇿🇦 +27</option></select><input type="tel" id="phone" placeholder="776686096" required></div></div>' +
-    ' <div class="form-group"><label>Password</label><input type="password" id="regPassword" minlength="6" required><div class="password-hint">Minimum 6 characters</div></div>' +
-    ' <div class="form-group"><label>Confirm Password</label><input type="password" id="confirmPassword" minlength="6" required></div>' +
+    ' <div class="form-group"><label>Password</label><div class="password-wrapper"><input type="password" id="regPassword" minlength="6" required><span class="toggle-password" onclick="togglePassword(\'regPassword\', this)">👁️</span></div><div class="password-hint">Minimum 6 characters</div></div>' +
+    ' <div class="form-group"><label>Confirm Password</label><div class="password-wrapper"><input type="password" id="confirmPassword" minlength="6" required><span class="toggle-password" onclick="togglePassword(\'confirmPassword\', this)">👁️</span></div></div>' +
     ' <div class="form-group"><label>Country Interest</label><select id="countryInterest" onchange="checkOtherCountry()" required><option value="">Select Country</option><option value="🇺🇬 Uganda">🇺🇬 Uganda</option><option value="🇦🇪 UAE">🇦🇪 UAE</option><option value="🇨🇦 Canada">🇨🇦 Canada</option><option value="🇬🇧 UK">🇬🇧 UK</option><option value="🇸🇦 Saudi Arabia">🇸🇦 Saudi Arabia</option><option value="🇶🇦 Qatar">🇶🇦 Qatar</option><option value="🇺🇸 USA">🇺🇸 USA</option><option value="🇦🇺 Australia">🇦🇺 Australia</option><option value="🇩🇪 Germany">🇩🇪 Germany</option><option value="Others">Others</option></select></div>' +
     ' <div class="form-group" id="otherCountryGroup"><label>Specify Country</label><input type="text" id="otherCountry" placeholder="Enter your country"></div>' +
     ' <div class="form-group"><label>Skills</label><input type="text" id="skills" placeholder="e.g. Housekeeping, Security, Nursing" required></div>' +
@@ -458,6 +461,16 @@ app.get('/', (req, res) => {
     ' <div class="footer-links"><a href="/about">About</a><a href="/privacy">Privacy</a></div>' +
     ' </div>' +
     ' <script>' +
+    ' function togglePassword(fieldId, iconElement) {' +
+    ' const passwordInput = document.getElementById(fieldId);' +
+    ' if (passwordInput.type === "password") {' +
+    ' passwordInput.type = "text";' +
+    ' iconElement.textContent = "🙈";' +
+    ' } else {' +
+    ' passwordInput.type = "password";' +
+    ' iconElement.textContent = "👁️";' +
+    ' }' +
+    ' }' +
     ' function showLogin() {' +
     ' document.getElementById("loginForm").style.display = "block";' +
     ' document.getElementById("registerForm").style.display = "none";' +
@@ -502,7 +515,7 @@ app.get('/', (req, res) => {
     ' const finalCountry = countrySelect === "Others"? document.getElementById("otherCountry").value : countrySelect;' +
     ' if (countrySelect === "Others" &&!finalCountry.trim()) { document.getElementById("error").style.display = "block"; document.getElementById("error").textContent = "Please specify your country"; return; }' +
     ' const fullPhone = document.getElementById("countryCode").value + document.getElementById("phone").value;' +
-    ' const res = await fetch("/api/register", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({ firstName: document.getElementById("firstName").value, lastName: document.getElementById("lastName").value, email: document.getElementById("regEmail").value, phone: fullPhone, password: password, skills: document.getElementById("skills").value, country_interest: finalCountry }) });' +
+    '     const res = await fetch("/api/register", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({ firstName: document.getElementById("firstName").value, lastName: document.getElementById("lastName").value, email: document.getElementById("regEmail").value, phone: fullPhone, password: password, skills: document.getElementById("skills").value, country_interest: finalCountry }) });' +
     ' const data = await res.json();' +
     ' if (data.success) { document.getElementById("success").style.display = "block"; document.getElementById("success").textContent = "Account created! Logging you in..."; setTimeout(() => window.location.href = "/jobs", 1000); }' +
     ' else { document.getElementById("error").style.display = "block"; document.getElementById("error").textContent = data.error; }' +
@@ -769,7 +782,6 @@ app.post('/api/create-checkout-session', requireLogin, async (req, res) => {
   }
 });
 
-// FLUTTERWAVE FIXED: This is the correct route
 app.post('/api/flutterwave-pay', requireLogin, async (req, res) => {
   console.log('Flutterwave route hit!');
   const { jobTitle, userEmail } = req.body;
@@ -904,8 +916,8 @@ app.get('/cv-success', requireLogin, async (req, res) => {
     }
   }
 
-  res.send(`
-<!DOCTYPE html><html><head><title>Payment Successful - EmmieTech</title><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;margin:0;padding:0;background:#f8f9fa;display:flex;align-items:center;justify-content:center;min-height:100vh}.card{background:white;padding:40px;border-radius:16px;box-shadow:0 4px 16px rgba(0,0,0,0.1);max-width:500px;text-align:center}.check{font-size:64px;color:#34a853;margin:0 0 16px 0}h1{color:#1a73e8;margin:0 0 16px 0}p{color:#5f6368;line-height:1.6;margin:0 0 24px 0}.btn{display:inline-block;background:#1a73e8;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600}</style></head><body><div class="card"><div class="check">✓</div><h1>Payment Successful!</h1><p>Thank you! Our CV experts will rewrite your resume for <b>${jobTitle}</b> and email it to you within 48 hours.</p><p>We'll contact you on WhatsApp ${userPhone}  if we need more details. Check your email for confirmation.</p><p><small>Reference: ${refId}</small></p><a href="/jobs" class="btn">Back to Jobs</a></div></body></html>
+    res.send(`
+<!DOCTYPE html><html><head><title>Payment Successful - EmmieTech</title><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;margin:0;padding:0;background:#f8f9fa;display:flex;align-items:center;justify-content:center;min-height:100vh}.card{background:white;padding:40px;border-radius:16px;box-shadow:0 4px 16px rgba(0,0,0,0.1);max-width:500px;text-align:center}.check{font-size:64px;color:#34a853;margin:0 0 16px 0}h1{color:#1a73e8;margin:0 0 16px 0}p{color:#5f6368;line-height:1.6;margin:0 0 24px 0}.btn{display:inline-block;background:#1a73e8;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600}</style></head><body><div class="card"><div class="check">✓</div><h1>Payment Successful!</h1><p>Thank you! Our CV experts will rewrite your resume for <b>${jobTitle}</b> and email it to you within 48 hours.</p><p>We'll contact you on WhatsApp ${userPhone} if we need more details. Check your email for confirmation.</p><p><small>Reference: ${refId}</small></p><a href="/jobs" class="btn">Back to Jobs</a></div></body></html>
   `);
 });
 
