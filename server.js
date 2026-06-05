@@ -93,7 +93,6 @@ pool.query(`
   )
 `).catch(console.error);
 
-// FLUTTERWAVE ADDED: flutterwave_tx_ref column
 pool.query(`
   CREATE TABLE IF NOT EXISTS cv_orders (
     id SERIAL PRIMARY KEY,
@@ -114,7 +113,6 @@ pool.query(`ALTER TABLE agency_jobs ADD CONSTRAINT unique_job_url UNIQUE (url)`)
   console.log('Constraint exists or table empty:', e.message);
 });
 
-// FLUTTERWAVE ADDED: Add column if it doesn't exist
 pool.query(`ALTER TABLE cv_orders ADD COLUMN IF NOT EXISTS flutterwave_tx_ref TEXT`).catch(e => {});
 
 async function getUserCountry(req) {
@@ -529,7 +527,7 @@ app.get('/jobs', requireLogin, async (req, res) => {
     ' <title>EmmieTech Global Recruitment Agency - Jobs</title>' +
     ' <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + ADSENSE_PUBLISHER_ID + '" crossorigin="anonymous"><\/script>' +
     ' <style>' +
-            ' body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; margin: 0; padding: 0; background: #f8f9fa; color: #202124; }' +
+        ' body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; margin: 0; padding: 0; background: #f8f9fa; color: #202124; }' +
     '.header { background: #fff; border-bottom: 1px solid #dadce0; padding: 12px 16px; position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap:8px; }' +
     '.header-left { display: flex; align-items: center; gap: 12px; }' +
     '.logo-circle { width: 52px; height: 52px; border-radius: 50%; overflow: hidden; border: 2px solid #1a73e8; flex-shrink: 0; }' +
@@ -701,7 +699,6 @@ app.get('/jobs', requireLogin, async (req, res) => {
   );
 });
 
-// FLUTTERWAVE ADDED: Updated CV service page with Flutterwave button
 app.get('/cv-service', requireLogin, async (req, res) => {
   const jobTitle = req.query.job || 'Your Dream Job';
   const user = await pool.query('SELECT first_name, email FROM candidates WHERE id = $1', [req.session.userId]);
@@ -835,7 +832,6 @@ app.post('/api/flutterwave-pay', requireLogin, async (req, res) => {
   }
 });
 
-// FLUTTERWAVE ADDED: Webhook to catch Flutterwave payments
 app.post('/flutterwave-webhook', async (req, res) => {
   const signature = req.headers['verif-hash'];
   if (!signature || signature!== process.env.FLUTTERWAVE_WEBHOOK_HASH) {
@@ -848,15 +844,12 @@ app.post('/flutterwave-webhook', async (req, res) => {
     const { tx_ref, amount, customer, created_at, status } = payload.data;
     const { userId, jobTitle } = payload.data.meta;
 
-    // Update order status
     await pool.query(`UPDATE cv_orders SET status = 'paid' WHERE flutterwave_tx_ref = $1`, [tx_ref]);
 
-    // Get user details
     const user = await pool.query('SELECT first_name, last_name, phone FROM candidates WHERE id = $1', [userId]);
     const userName = `${user.rows[0].first_name} ${user.rows[0].last_name}`;
     const userPhone = user.rows[0].phone;
 
-    // Send you an email notification
     await sendEmail(ADMIN_EMAIL, `🔥 Flutterwave: UGX ${amount} from ${customer.name}`, `
       <h2>New CV Service Order - UGX ${amount} Paid via Flutterwave</h2>
       <p><b>Customer:</b> ${userName}</p>
@@ -869,7 +862,6 @@ app.post('/flutterwave-webhook', async (req, res) => {
       <p><a href="${req.protocol}://${req.get('host')}/admin">View in Admin Dashboard</a></p>
     `);
 
-    // Send customer confirmation
     await sendEmail(customer.email, `Payment Received - Your CV for ${jobTitle}`, `
       <h2>Thank you ${userName}!</h2>
       <p>We've received your UGX ${amount} payment for a professional CV rewrite via Flutterwave.</p>
@@ -913,8 +905,8 @@ app.get('/cv-success', requireLogin, async (req, res) => {
     }
   }
 
-  res.send(`
-<!DOCTYPE html><html><head><title>Payment Successful - EmmieTech</title><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;margin:0;padding:0;background:#f8f9fa;display:flex;align-items:center;justify-content:center;min-height:100vh}.card{background:white;padding:40px;border-radius:16px;box-shadow:0 4px 16px rgba(0,0,0,0.1);max-width:500px;text-align:center}.check{font-size:64px;color:#34a853;margin:0 00 16px 0}h1{color:#1a73e8;margin:0 0 16px 0}p{color:#5f6368;line-height:1.6;margin:0 0 24px 0}.btn{display:inline-block;background:#1a73e8;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600}</style></head><body><div class="card"><div class="check">✓</div><h1>Payment Successful!</h1><p>Thank you! Our CV experts will rewrite your resume for <b>${jobTitle}</b> and email it to you within 48 hours.</p><p>We'll contact you on WhatsApp ${userPhone} if we need more details. Check your email for confirmation.</p><p><small>Reference: ${refId}</small></p><a href="/jobs" class="btn">Back to Jobs</a></div></body></html>
+    res.send(`
+<!DOCTYPE html><html><head><title>Payment Successful - EmmieTech</title><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;margin:0;padding:0;background:#f8f9fa;display:flex;align-items:center;justify-content:center;min-height:100vh}.card{background:white;padding:40px;border-radius:16px;box-shadow:0 4px 16px rgba(0,0,0,0.1);max-width:500px;text-align:center}.check{font-size:64px;color:#34a853;margin:0 0 16px 0}h1{color:#1a73e8;margin:0 0 16px 0}p{color:#5f6368;line-height:1.6;margin:0 0 24px 0}.btn{display:inline-block;background:#1a73e8;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600}</style></head><body><div class="card"><div class="check">✓</div><h1>Payment Successful!</h1><p>Thank you! Our CV experts will rewrite your resume for <b>${jobTitle}</b> and email it to you within 48 hours.</p><p>We'll contact you on WhatsApp ${userPhone} if we need more details. Check your email for confirmation.</p><p><small>Reference: ${refId}</small></p><a href="/jobs" class="btn">Back to Jobs</a></div></body></html>
   `);
 });
 
