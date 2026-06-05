@@ -12,7 +12,6 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_your_key_here');
 
-// FLUTTERWAVE ADDED
 const FLUTTERWAVE_SECRET_KEY = process.env.FLUTTERWAVE_SECRET_KEY || 'FLWSECK_TEST-your-key';
 const FLUTTERWAVE_PUBLIC_KEY = process.env.FLUTTERWAVE_PUBLIC_KEY || 'FLWPUBK_TEST-your-key';
 
@@ -527,8 +526,8 @@ app.get('/jobs', requireLogin, async (req, res) => {
     ' <title>EmmieTech Global Recruitment Agency - Jobs</title>' +
     ' <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + ADSENSE_PUBLISHER_ID + '" crossorigin="anonymous"><\/script>' +
     ' <style>' +
-        ' body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; margin: 0; padding: 0; background: #f8f9fa; color: #202124; }' +
-    '.header { background: #fff; border-bottom: 1px solid #dadce0; padding: 12px 16px; position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap:8px; }' +
+    ' body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; margin: 0; padding: 0; background: #f8f9fa; color: #202124; }' +
+        '.header { background: #fff; border-bottom: 1px solid #dadce0; padding: 12px 16px; position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap:8px; }' +
     '.header-left { display: flex; align-items: center; gap: 12px; }' +
     '.logo-circle { width: 52px; height: 52px; border-radius: 50%; overflow: hidden; border: 2px solid #1a73e8; flex-shrink: 0; }' +
     '.logo-circle img { width: 100%; height: 100%; object-fit: cover; }' +
@@ -770,13 +769,13 @@ app.post('/api/create-checkout-session', requireLogin, async (req, res) => {
   }
 });
 
-// FLUTTERWAVE CORRECTED: Create Flutterwave payment link
+// FLUTTERWAVE FIXED: This is the correct route
 app.post('/api/flutterwave-pay', requireLogin, async (req, res) => {
   console.log('Flutterwave route hit!');
   const { jobTitle, userEmail } = req.body;
   try {
     if (!process.env.FLUTTERWAVE_SECRET_KEY) {
-      console.log('ERROR: Secret key missing');
+      console.log('ERROR: FLUTTERWAVE_SECRET_KEY missing');
       return res.status(500).json({ error: 'Secret key not set' });
     }
 
@@ -905,8 +904,8 @@ app.get('/cv-success', requireLogin, async (req, res) => {
     }
   }
 
-    res.send(`
-<!DOCTYPE html><html><head><title>Payment Successful - EmmieTech</title><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;margin:0;padding:0;background:#f8f9fa;display:flex;align-items:center;justify-content:center;min-height:100vh}.card{background:white;padding:40px;border-radius:16px;box-shadow:0 4px 16px rgba(0,0,0,0.1);max-width:500px;text-align:center}.check{font-size:64px;color:#34a853;margin:0 0 16px 0}h1{color:#1a73e8;margin:0 0 16px 0}p{color:#5f6368;line-height:1.6;margin:0 0 24px 0}.btn{display:inline-block;background:#1a73e8;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600}</style></head><body><div class="card"><div class="check">✓</div><h1>Payment Successful!</h1><p>Thank you! Our CV experts will rewrite your resume for <b>${jobTitle}</b> and email it to you within 48 hours.</p><p>We'll contact you on WhatsApp ${userPhone} if we need more details. Check your email for confirmation.</p><p><small>Reference: ${refId}</small></p><a href="/jobs" class="btn">Back to Jobs</a></div></body></html>
+  res.send(`
+<!DOCTYPE html><html><head><title>Payment Successful - EmmieTech</title><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;margin:0;padding:0;background:#f8f9fa;display:flex;align-items:center;justify-content:center;min-height:100vh}.card{background:white;padding:40px;border-radius:16px;box-shadow:0 4px 16px rgba(0,0,0,0.1);max-width:500px;text-align:center}.check{font-size:64px;color:#34a853;margin:0 0 16px 0}h1{color:#1a73e8;margin:0 0 16px 0}p{color:#5f6368;line-height:1.6;margin:0 0 24px 0}.btn{display:inline-block;background:#1a73e8;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600}</style></head><body><div class="card"><div class="check">✓</div><h1>Payment Successful!</h1><p>Thank you! Our CV experts will rewrite your resume for <b>${jobTitle}</b> and email it to you within 48 hours.</p><p>We'll contact you on WhatsApp ${userPhone}  if we need more details. Check your email for confirmation.</p><p><small>Reference: ${refId}</small></p><a href="/jobs" class="btn">Back to Jobs</a></div></body></html>
   `);
 });
 
