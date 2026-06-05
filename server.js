@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import pkg from 'pg';
 import fetch from 'node-fetch';
 import session from 'express-session';
+import pgSession from 'connect-pg-simple';
 import * as cheerio from 'cheerio';
 import Stripe from 'stripe';
 import nodemailer from 'nodemailer';
@@ -55,11 +56,27 @@ const pool = new Pool({
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// FIX 1: Trust Render proxy for HTTPS cookies
+app.set('trust proxy', 1);
+
+// FIX 2: Use Postgres session store so sessions survive restarts
+const PgSession = pgSession(session);
 app.use(session({
-  secret: 'emmietech-recruitment-2026-secret',
+  store: new PgSession({
+    pool: pool,
+    tableName: 'session',
+    createTableIfMissing: true
+  }),
+  secret: process.env.SESSION_SECRET || 'emmietech-recruitment-2026-secret',
   resave: false,
   saveUninitialized: false,
-  cookie: { maxAge: 30 * 24 * 60 * 60 * 1000 }
+  cookie: {
+    maxAge: 30 * 24 * 60 * 60 * 1000,
+    secure: true, // HTTPS only
+    httpOnly: true,
+    sameSite: 'none'
+  }
 }));
 
 pool.query(`
@@ -147,145 +164,8 @@ const AGENCY_JOBS = [
   { title: "Aged Care Nurse - 482 Visa Sponsorship", company: "Bupa Australia", location: "Sydney, Australia", salary: "AUD $80,000 - $100,000 + Relocation", url: "https://careers.bupa.com.au/en", country: "Australia", category: "Healthcare" }
 ];
 
-async function scrapeBrighterMonday() {
-  console.log('Scraping BrighterMonday Uganda...');
-  let totalAdded = 0;
-  try {
-    const res = await fetch('https://www.brightermonday.co.ug/jobs', {
-      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
-    });
-    const html = await res.text();
-    const $ = cheerio.load(html);
-
-    const jobs = [];
-    $('.search-result').slice(0, 20).each((i, el) => {
-      const title = $(el).find('h3 a').text().trim();
-      const company = $(el).find('.search-result__job-meta.company-name').text().trim() || 'Confidential';
-      const location = $(el).find('.search-result__location').text().trim() || 'Kampala, Uganda';
-      const url = 'https://www.brightermonday.co.ug' + $(el).find('h3 a').attr('href');
-      const category = $(el).find('.search-result__job-meta.job-category').text().trim() || 'General';
-
-      if (title && url) {
-        jobs.push({ title, company, location, url, category, country: 'Uganda', salary: 'Competitive' });
-      }
-    });
-
-    for (const job of jobs) {
-      try {
-        await pool.query(
-          `INSERT INTO agency_jobs (title, company, location, country, salary, category, url)
-           VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-          [job.title, job.company, job.location, job.country, job.salary, job.category, job.url]
-        );
-        totalAdded++;
-      } catch (e) {}
-    }
-    console.log(`BrighterMonday: Added ${totalAdded} jobs`);
-  } catch (err) {
-    console.log('BrighterMonday scrape failed:', err.message);
-  }
-  return totalAdded;
-}
-
-async function scrapeFuzu() {
-  console.log('Scraping Fuzu Uganda...');
-  let totalAdded = 0;
-  try {
-    const res = await fetch('https://www.fuzu.com/jobs/uganda', {
-      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
-    });
-    const html = await res.text();
-    const $ = cheerio.load(html);
-
-    const jobs = [];
-    $('.job-card').slice(0, 20).each((i, el) => {
-      const title = $(el).find('.job-title').text().trim();
-      const company = $(el).find('.company-name').text().trim() || 'Confidential';
-      const location = $(el).find('.job-location').text().trim() || 'Kampala, Uganda';
-      const url = 'https://www.fuzu.com' + $(el).find('a').attr('href');
-      const category = 'General';
-
-      if (title && url) {
-        jobs.push({ title, company, location, url, category, country: 'Uganda', salary: 'Competitive' });
-      }
-    });
-
-    for (const job of jobs) {
-      try {
-        await pool.query(
-          `INSERT INTO agency_jobs (title, company, location, country, salary, category, url)
-           VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-          [job.title, job.company, job.location, job.country, job.salary, job.category, job.url]
-        );
-        totalAdded++;
-      } catch (e) {}
-    }
-    console.log(`Fuzu: Added ${totalAdded} jobs`);
-  } catch (err) {
-    console.log('Fuzu scrape failed:', err.message);
-  }
-  return totalAdded;
-}
-
-async function fetchAdzunaJobs() {
-  console.log('Fetching Adzuna jobs...');
-  const countries = [
-    { code: 'us', name: 'USA' },
-    { code: 'ca', name: 'Canada' },
-    { code: 'gb', name: 'UK' },
-    { code: 'ae', name: 'UAE' },
-    { code: 'de', name: 'Germany' },
-    { code: 'au', name: 'Australia' }
-  ];
-
-  const keywords = ['nurse', 'software engineer', 'truck driver', 'chef', 'security', 'construction', 'caregiver', 'engineer', 'manager', 'driver'];
-  let totalAdded = 0;
-
-  for (const country of countries) {
-    for (const keyword of keywords) {
-      try {
-        const url = `https://api.adzuna.com/v1/api/jobs/${country.code}/search/1?app_id=${ADZUNA_APP_ID}&app_key=${ADZUNA_API_KEY}&results_per_page=5&what=${encodeURIComponent(keyword)}&sort_by=date&max_days_old=1`;
-        const res = await fetch(url);
-        const data = await res.json();
-
-        if (data.results) {
-          for (const job of data.results) {
-            try {
-              await pool.query(
-                `INSERT INTO agency_jobs (title, company, location, country, salary, category, url)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-                [
-                  job.title,
-                  job.company?.display_name || 'Confidential',
-                  job.location?.display_name || country.name,
-                  country.name,
-                  job.salary_max? `${job.salary_min}-${job.salary_max} ${job.salary_is_predicted? '(est)' : ''}` : 'Competitive',
-                  job.category?.label || 'General',
-                  job.redirect_url
-                ]
-              );
-              totalAdded++;
-            } catch (insertErr) {}
-          }
-        }
-      } catch (err) {
-        console.log(`Failed ${country.name} ${keyword}:`, err.message);
-      }
-    }
-  }
-  console.log(`Adzuna: Added ${totalAdded} jobs`);
-  return totalAdded;
-}
-
-async function fetchDailyJobs() {
-  console.log('Starting daily job fetch...');
-  const adzunaCount = await fetchAdzunaJobs();
-  const bmCount = await scrapeBrighterMonday();
-  const fuzuCount = await scrapeFuzu();
-  console.log(`Daily fetch complete. Adzuna: ${adzunaCount}, BrighterMonday: ${bmCount}, Fuzu: ${fuzuCount}`);
-}
-
-// fetchDailyJobs(); 
+// FIX 3: Keep scraper disabled. Run manually via /admin later
+// fetchDailyJobs();
 // setInterval(fetchDailyJobs, 24 * 60 * 60 * 1000);
 
 function requireLogin(req, res, next) {
@@ -567,7 +447,7 @@ app.get('/', (req, res) => {
     ' const confirmPassword = document.getElementById("confirmPassword").value;' +
     ' if (password.length < 6) { document.getElementById("error").style.display = "block"; document.getElementById("error").textContent = "Password must be at least 6 characters"; return; }' +
     ' if (password!== confirmPassword) { document.getElementById("error").style.display = "block"; document.getElementById("error").textContent = "Passwords do not match"; return; }' +
-        ' const countrySelect = document.getElementById("countryInterest").value;' +
+    ' const countrySelect = document.getElementById("countryInterest").value;' +
     ' const finalCountry = countrySelect === "Others"? document.getElementById("otherCountry").value : countrySelect;' +
     ' if (countrySelect === "Others" &&!finalCountry.trim()) { document.getElementById("error").style.display = "block"; document.getElementById("error").textContent = "Please specify your country"; return; }' +
     ' const fullPhone = document.getElementById("countryCode").value + document.getElementById("phone").value;' +
@@ -604,7 +484,7 @@ app.get('/jobs', requireLogin, async (req, res) => {
     ' <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + ADSENSE_PUBLISHER_ID + '" crossorigin="anonymous"><\/script>' +
     ' <style>' +
     ' body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; margin: 0; padding: 0; background: #f8f9fa; color: #202124; }' +
-        '.header { background: #fff; border-bottom: 1px solid #dadce0; padding: 12px 16px; position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap:8px; }' +
+    '.header { background: #fff; border-bottom: 1px solid #dadce0; padding: 12px 16px; position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap:8px; }' +
     '.header-left { display: flex; align-items: center; gap: 12px; }' +
     '.logo-circle { width: 52px; height: 52px; border-radius: 50%; overflow: hidden; border: 2px solid #1a73e8; flex-shrink: 0; }' +
     '.logo-circle img { width: 100%; height: 100%; object-fit: cover; }' +
@@ -618,7 +498,7 @@ app.get('/jobs', requireLogin, async (req, res) => {
     '.container { max-width: 1200px; margin: 32px auto; padding: 0 20px; }' +
     '.filters { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }' +
     '.filters select { padding: 10px 14px; border-radius: 8px; border: 1px solid #dadce0; font-size: 14px; flex: 1; min-width: 140px; }' +
-    '.search-wrapper { display: flex; gap: 8px; width: 100%; flex-direction: column; }' +
+    '.search-wrapper { display:flex; gap: 8px; width: 100%; flex-direction: column; }' +
     '.search-wrapper input { width: 100%; padding: 12px 14px; border-radius: 8px; border: 1px solid #dadce0; font-size: 14px; }' +
     '.search-buttons { display: flex; gap: 8px; }' +
     '#searchBtn { flex: 1; background: #1a73e8; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; }' +
@@ -972,7 +852,7 @@ app.get('/cv-success', requireLogin, async (req, res) => {
     userPhone = session.metadata.userPhone;
     userEmail = session.customer_details.email;
     refId = session_id;
-        await pool.query(`UPDATE cv_orders SET status = 'paid' WHERE stripe_session_id = $1`, [session_id]);
+    await pool.query(`UPDATE cv_orders SET status = 'paid' WHERE stripe_session_id = $1`, [session_id]);
   } else if (gateway === 'flutterwave' && tx_ref) {
     const order = await pool.query(`SELECT * FROM cv_orders WHERE flutterwave_tx_ref = $1`, [tx_ref]);
     if (order.rows.length > 0) {
