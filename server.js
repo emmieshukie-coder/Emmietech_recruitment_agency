@@ -285,8 +285,8 @@ async function fetchDailyJobs() {
   console.log(`Daily fetch complete. Adzuna: ${adzunaCount}, BrighterMonday: ${bmCount}, Fuzu: ${fuzuCount}`);
 }
 
-fetchDailyJobs();
-setInterval(fetchDailyJobs, 24 * 60 * 60 * 1000);
+// fetchDailyJobs(); 
+// setInterval(fetchDailyJobs, 24 * 60 * 60 * 1000);
 
 function requireLogin(req, res, next) {
   if (req.session.userId) {
