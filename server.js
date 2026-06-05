@@ -12,6 +12,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_your_key_here');
 
+// FLUTTERWAVE ADDED
 const FLUTTERWAVE_SECRET_KEY = process.env.FLUTTERWAVE_SECRET_KEY || 'FLWSECK_TEST-your-key';
 const FLUTTERWAVE_PUBLIC_KEY = process.env.FLUTTERWAVE_PUBLIC_KEY || 'FLWPUBK_TEST-your-key';
 
@@ -92,6 +93,7 @@ pool.query(`
   )
 `).catch(console.error);
 
+// FLUTTERWAVE ADDED: flutterwave_tx_ref column
 pool.query(`
   CREATE TABLE IF NOT EXISTS cv_orders (
     id SERIAL PRIMARY KEY,
@@ -112,6 +114,7 @@ pool.query(`ALTER TABLE agency_jobs ADD CONSTRAINT unique_job_url UNIQUE (url)`)
   console.log('Constraint exists or table empty:', e.message);
 });
 
+// FLUTTERWAVE ADDED: Add column if it doesn't exist
 pool.query(`ALTER TABLE cv_orders ADD COLUMN IF NOT EXISTS flutterwave_tx_ref TEXT`).catch(e => {});
 
 async function getUserCountry(req) {
@@ -258,7 +261,6 @@ async function fetchAdzunaJobs() {
                   job.title,
                   job.company?.display_name || 'Confidential',
                   job.location?.display_name || country.name,
-                  country.name,
                   job.salary_max? `${job.salary_min}-${job.salary_max} ${job.salary_is_predicted? '(est)' : ''}` : 'Competitive',
                   job.category?.label || 'General',
                   job.redirect_url
@@ -423,9 +425,6 @@ app.get('/', (req, res) => {
     '.password-hint { font-size: 12px; color: #5f6368; margin-top: 4px; }' +
     '.footer-links { text-align: center; margin-top: 20px; font-size: 13px; }' +
     '.footer-links a { color: #5f6368; text-decoration: none; margin: 0 10px; }' +
-    '.password-wrapper { position: relative; }' +
-    '.password-wrapper input { padding-right: 45px; }' +
-    '.toggle-password { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; user-select: none; font-size: 18px; }' +
     ' </style>' +
     '</head>' +
     '<body>' +
@@ -443,7 +442,7 @@ app.get('/', (req, res) => {
     ' <div id="success" class="success"></div>' +
     ' <form id="loginForm" onsubmit="handleLogin(event)">' +
     ' <div class="form-group"><label>Email</label><input type="email" id="loginEmail" required></div>' +
-    ' <div class="form-group"><label>Password</label><div class="password-wrapper"><input type="password" id="loginPassword" autocomplete="new-password" required><span class="toggle-password" onclick="togglePassword(\'loginPassword\', this)">👁️</span></div></div>' +
+    ' <div class="form-group"><label>Password</label><input type="password" id="loginPassword" required></div>' +
     ' <button type="submit" class="btn">Login to View Jobs</button>' +
     ' </form>' +
     ' <form id="registerForm" onsubmit="handleRegister(event)">' +
@@ -451,8 +450,8 @@ app.get('/', (req, res) => {
     ' <div class="form-group"><label>Last Name</label><input type="text" id="lastName" required></div>' +
     ' <div class="form-group"><label>Email</label><input type="email" id="regEmail" required></div>' +
     ' <div class="form-group"><label>WhatsApp Number</label><div class="phone-group"><select id="countryCode"><option value="+256">🇺🇬 +256</option><option value="+254">🇰🇪 +254</option><option value="+255">🇹🇿 +255</option><option value="+250">🇷🇼 +250</option><option value="+971">🇦🇪 +971</option><option value="+966">🇸🇦 +966</option><option value="+974">🇶🇦 +974</option><option value="+1">🇨🇦 +1</option><option value="+44">🇬🇧 +44</option><option value="+91">🇮🇳 +91</option><option value="+234">🇳🇬 +234</option><option value="+233">🇬🇭 +233</option><option value="+27">🇿🇦 +27</option></select><input type="tel" id="phone" placeholder="776686096" required></div></div>' +
-    ' <div class="form-group"><label>Password</label><div class="password-wrapper"><input type="password" id="regPassword" minlength="6" autocomplete="new-password" required><span class="toggle-password" onclick="togglePassword(\'regPassword\', this)">👁️</span></div><div class="password-hint">Minimum 6 characters</div></div>' +
-    ' <div class="form-group"><label>Confirm Password</label><div class="password-wrapper"><input type="password" id="confirmPassword" minlength="6" autocomplete="new-password" required><span class="toggle-password" onclick="togglePassword(\'confirmPassword\', this)">👁️</span></div></div>' +
+    ' <div class="form-group"><label>Password</label><input type="password" id="regPassword" minlength="6" required><div class="password-hint">Minimum 6 characters</div></div>' +
+    ' <div class="form-group"><label>Confirm Password</label><input type="password" id="confirmPassword" minlength="6" required></div>' +
     ' <div class="form-group"><label>Country Interest</label><select id="countryInterest" onchange="checkOtherCountry()" required><option value="">Select Country</option><option value="🇺🇬 Uganda">🇺🇬 Uganda</option><option value="🇦🇪 UAE">🇦🇪 UAE</option><option value="🇨🇦 Canada">🇨🇦 Canada</option><option value="🇬🇧 UK">🇬🇧 UK</option><option value="🇸🇦 Saudi Arabia">🇸🇦 Saudi Arabia</option><option value="🇶🇦 Qatar">🇶🇦 Qatar</option><option value="🇺🇸 USA">🇺🇸 USA</option><option value="🇦🇺 Australia">🇦🇺 Australia</option><option value="🇩🇪 Germany">🇩🇪 Germany</option><option value="Others">Others</option></select></div>' +
     ' <div class="form-group" id="otherCountryGroup"><label>Specify Country</label><input type="text" id="otherCountry" placeholder="Enter your country"></div>' +
     ' <div class="form-group"><label>Skills</label><input type="text" id="skills" placeholder="e.g. Housekeeping, Security, Nursing" required></div>' +
@@ -461,16 +460,6 @@ app.get('/', (req, res) => {
     ' <div class="footer-links"><a href="/about">About</a><a href="/privacy">Privacy</a></div>' +
     ' </div>' +
     ' <script>' +
-    ' function togglePassword(fieldId, iconElement) {' +
-    ' const passwordInput = document.getElementById(fieldId);' +
-    ' if (passwordInput.type === "password") {' +
-    ' passwordInput.type = "text";' +
-    ' iconElement.textContent = "🙈";' +
-    ' } else {' +
-    ' passwordInput.type = "password";' +
-    ' iconElement.textContent = "👁️";' +
-    ' }' +
-    ' }' +
     ' function showLogin() {' +
     ' document.getElementById("loginForm").style.display = "block";' +
     ' document.getElementById("registerForm").style.display = "none";' +
@@ -499,15 +488,9 @@ app.get('/', (req, res) => {
     ' async function handleLogin(e) {' +
     ' e.preventDefault();' +
     ' document.getElementById("error").style.display = "none";' +
-    ' const emailInput = document.getElementById("loginEmail");' +
-    ' const passwordInput = document.getElementById("loginPassword");' +
-    ' const res = await fetch("/api/login", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({ email: emailInput.value, password: passwordInput.value }) });' +
+    ' const res = await fetch("/api/login", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({ email: document.getElementById("loginEmail").value, password: document.getElementById("loginPassword").value }) });' +
     ' const data = await res.json();' +
-    ' if (data.success) { ' +
-    ' emailInput.value = "";' +
-    ' passwordInput.value = "";' +
-    ' window.location.href = "/jobs"; ' +
-    ' }' +
+    ' if (data.success) { window.location.href = "/jobs"; }' +
     ' else { document.getElementById("error").style.display = "block"; document.getElementById("error").textContent = data.error; }' +
     ' }' +
     ' async function handleRegister(e) {' +
@@ -524,11 +507,11 @@ app.get('/', (req, res) => {
     ' const res = await fetch("/api/register", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({ firstName: document.getElementById("firstName").value, lastName: document.getElementById("lastName").value, email: document.getElementById("regEmail").value, phone: fullPhone, password: password, skills: document.getElementById("skills").value, country_interest: finalCountry }) });' +
     ' const data = await res.json();' +
     ' if (data.success) { document.getElementById("success").style.display = "block"; document.getElementById("success").textContent = "Account created! Logging you in..."; setTimeout(() => window.location.href = "/jobs", 1000); }' +
-      ' else { document.getElementById("error").style.display = "block"; document.getElementById("error").textContent = data.error; }' +
-  ' }' +
-  ' <\/script>' +
-  ' </body>' +
-  ' </html>'
+    ' else { document.getElementById("error").style.display = "block"; document.getElementById("error").textContent = data.error; }' +
+    ' }' +
+    ' <\/script>' +
+    ' </body>' +
+    ' </html>'
   );
 });
 
@@ -545,8 +528,8 @@ app.get('/jobs', requireLogin, async (req, res) => {
     ' <title>EmmieTech Global Recruitment Agency - Jobs</title>' +
     ' <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + ADSENSE_PUBLISHER_ID + '" crossorigin="anonymous"><\/script>' +
     ' <style>' +
-    ' body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; margin: 0; padding: 0; background: #f8f9fa; color: #202124; }' +
-        '.header { background: #fff; border-bottom: 1px solid #dadce0; padding: 12px 16px; position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap:8px; }' +
+        ' body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; margin: 0; padding: 0; background: #f8f9fa; color: #202124; }' +
+    '.header { background: #fff; border-bottom: 1px solid #dadce0; padding: 12px 16px; position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap:8px; }' +
     '.header-left { display: flex; align-items: center; gap: 12px; }' +
     '.logo-circle { width: 52px; height: 52px; border-radius: 50%; overflow: hidden; border: 2px solid #1a73e8; flex-shrink: 0; }' +
     '.logo-circle img { width: 100%; height: 100%; object-fit: cover; }' +
@@ -717,6 +700,7 @@ app.get('/jobs', requireLogin, async (req, res) => {
   );
 });
 
+// FLUTTERWAVE ADDED: Updated CV service page with Flutterwave button
 app.get('/cv-service', requireLogin, async (req, res) => {
   const jobTitle = req.query.job || 'Your Dream Job';
   const user = await pool.query('SELECT first_name, email FROM candidates WHERE id = $1', [req.session.userId]);
@@ -739,7 +723,7 @@ async function handleFlutterwaveCheckout(){
   try{
     const res=await fetch('/api/flutterwave-pay',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jobTitle:'${jobTitle.replace(/'/g, "\\'")}',userEmail:'${userEmail}'})});
     const data=await res.json();
-    if(data.link){window.location.href=data.link}else{alert('Payment error. Please try again.');btn.disabled=false;btn.textContent='Pay with Mobile Money/Card - UGX 114,000'}
+    if(data.url){window.location.href=data.url}else{alert('Payment error. Please try again.');btn.disabled=false;btn.textContent='Pay with Mobile Money/Card - UGX 114,000'}
   }catch(err){alert('Error: '+err.message);btn.disabled=false;btn.textContent='Pay with Mobile Money/Card - UGX 114,000'}
 }
 <\/script></body></html>
@@ -788,15 +772,10 @@ app.post('/api/create-checkout-session', requireLogin, async (req, res) => {
   }
 });
 
+// FLUTTERWAVE ADDED: Create Flutterwave payment link
 app.post('/api/flutterwave-pay', requireLogin, async (req, res) => {
-  console.log('Flutterwave route hit!');
   const { jobTitle, userEmail } = req.body;
   try {
-    if (!process.env.FLUTTERWAVE_SECRET_KEY) {
-      console.log('ERROR: FLUTTERWAVE_SECRET_KEY missing');
-      return res.status(500).json({ error: 'Secret key not set' });
-    }
-
     const user = await pool.query('SELECT first_name, last_name, phone FROM candidates WHERE id = $1', [req.session.userId]);
     const userData = user.rows[0];
     const txRef = `EMMIETECH-CV-${req.session.userId}-${Date.now()}`;
@@ -825,30 +804,30 @@ app.post('/api/flutterwave-pay', requireLogin, async (req, res) => {
     const response = await fetch("https://api.flutterwave.com/v3/payments", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${process.env.FLUTTERWAVE_SECRET_KEY}`,
+        Authorization: `Bearer ${FLUTTERWAVE_SECRET_KEY}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify(payload)
     });
 
     const data = await response.json();
-    console.log('Flutterwave response:', data);
 
     if (data.status === "success") {
       await pool.query(
         `INSERT INTO cv_orders (user_id, user_email, user_name, user_phone, job_title, flutterwave_tx_ref, amount, status) VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending')`,
         [req.session.userId, userEmail, `${userData.first_name} ${userData.last_name}`, userData.phone, jobTitle, txRef, CV_PRICE_UGX]
       );
-      res.json({ link: data.data.link });
+      res.json({ url: data.data.link });
     } else {
-      res.status(400).json({ error: data.message || 'Flutterwave payment init failed' });
+      res.status(400).json({ error: 'Flutterwave payment init failed' });
     }
   } catch (err) {
-    console.log('Flutterwave crash:', err.message);
-    res.status(500).json({ error: 'Payment error. Please try again.' });
+    console.error('Flutterwave error:', err);
+    res.status(500).json({ error: 'Payment failed to initialize' });
   }
 });
 
+// FLUTTERWAVE ADDED: Webhook to catch Flutterwave payments
 app.post('/flutterwave-webhook', async (req, res) => {
   const signature = req.headers['verif-hash'];
   if (!signature || signature!== process.env.FLUTTERWAVE_WEBHOOK_HASH) {
@@ -861,12 +840,15 @@ app.post('/flutterwave-webhook', async (req, res) => {
     const { tx_ref, amount, customer, created_at, status } = payload.data;
     const { userId, jobTitle } = payload.data.meta;
 
+    // Update order status
     await pool.query(`UPDATE cv_orders SET status = 'paid' WHERE flutterwave_tx_ref = $1`, [tx_ref]);
 
+    // Get user details
     const user = await pool.query('SELECT first_name, last_name, phone FROM candidates WHERE id = $1', [userId]);
     const userName = `${user.rows[0].first_name} ${user.rows[0].last_name}`;
     const userPhone = user.rows[0].phone;
 
+    // Send you an email notification
     await sendEmail(ADMIN_EMAIL, `🔥 Flutterwave: UGX ${amount} from ${customer.name}`, `
       <h2>New CV Service Order - UGX ${amount} Paid via Flutterwave</h2>
       <p><b>Customer:</b> ${userName}</p>
@@ -879,6 +861,7 @@ app.post('/flutterwave-webhook', async (req, res) => {
       <p><a href="${req.protocol}://${req.get('host')}/admin">View in Admin Dashboard</a></p>
     `);
 
+    // Send customer confirmation
     await sendEmail(customer.email, `Payment Received - Your CV for ${jobTitle}`, `
       <h2>Thank you ${userName}!</h2>
       <p>We've received your UGX ${amount} payment for a professional CV rewrite via Flutterwave.</p>
@@ -936,7 +919,7 @@ app.get('/admin', requireLogin, async (req, res) => {
   const jobs = await pool.query(`SELECT COUNT(*) as total FROM agency_jobs WHERE status = 'active'`);
 
   res.send(`
-<!DOCTYPE html><html><head><title>EmmieTech Admin</title><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;margin:0;padding:20px;background:#f8f9fa}.header{background:#1a73e8;color:white;padding:20px;border-radius:12px;margin-bottom:20px}h1{margin:0}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}.stat-card{background:white;padding:20px;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.1)}.stat-num{font-size:32px;font-weight:700;color:#1a73e8}.stat-label{color:#5f6368;font-size:14px}table{width:100%;background:white;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1)}th{background:#f8f9fa;padding:12px;text-align:left;font-weight:600;color:#5f6368;font-size:14px}td{padding:12px;border-top:1px solid #f1f3f4;font-size:14px}.status-paid{background:#e6f4ea;color:#137333;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:600}.status-pending{background:#fef7e0;color:#ea8600;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:600}a{color:#1a73e8;text-decoration:none}.gateway{font-size:11px;color:#5f6368;margin-left:4px}</style></head><body><div class="header"><h1>EmmieTech Admin Dashboard</h1><p style="margin:8px 0 0;opacity:0.9;">CV Orders & Analytics</p></div><div class="stats"><div class="stat-card"><div class="stat-num">${users.rows[0].total}</div><div class="stat-label">Total Users</div></div><div class="stat-card"><div class="stat-num">${jobs.rows[0].total}</div><div class="stat-label">Active Jobs</div></div><div class="stat-card"><div class="stat-num">${orders.rows.filter(o => o.status === 'paid').length}</div><div class="stat-label">CV Orders Paid</div></div><div class="stat-card"><div class="stat-num">$${(orders.rows.filter(o => o.status === 'paid' && o.stripe_session_id).length * 30) + (orders.rows.filter(o => o.status === 'paid' && o.flutterwave_tx_ref).length * 30)}</div><div class="stat-label">Revenue Est.</div></div></div><h2>Recent CV Orders</h2><table><thead><tr><th>Date</th><th>Customer</th><th>Email</th><th>Phone</th><th>Job Title</th><th>Amount</th><th>Status</th></tr></thead><tbody>${orders.rows.map(o => `<tr><td>${new Date(o.created_at).toLocaleDateString()}</td><td>${o.user_name}</td><td>${o.user_email}</td><td><a href="https://wa.me/${o.user_phone?.replace(/[^0-9]/g,'')}">${o.user_phone}</a></td><td>${o.job_title}</td><td>$${(o.amount/100).toFixed(2)} ${o.flutterwave_tx_ref? '<span class="gateway">(FLW)</span>' : '<span class="gateway">(Stripe)</span>'}</td><td><span class="status-${o.status}">${o.status.toUpperCase()}</span></td></tr>`).join('')}</tbody></table><p style="margin-top:24px;"><a href="/jobs">← Back to Jobs</a> | <a href="/logout">Logout</a></p></body></html>
+<!DOCTYPE html><html><head><title>EmmieTech Admin</title><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;margin:0;padding:20px;background:#f8f9fa}.header{background:#1a73e8;color:white;padding:20px;border-radius:12px;margin-bottom:20px}h1{margin:0}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}.stat-card{background:white;padding:20px;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.1)}.stat-num{font-size:32px;font-weight:700;color:#1a73e8}.stat-label{color:#5f6368;font-size:14px}table{width:100%;background:white;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1)}th{background:#f8f9fa;padding:12px;text-align:left;font-weight:600;color:#5f6368;font-size:14px}td{padding:12px;border-top:1px solid #f1f3f4;font-size:14px}.status-paid{background:#e6f4ea;color:#137333;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:600}.status-pending{background:#fef7e0;color:#ea8600;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:600}a{color:#1a73e8;text-decoration:none}.gateway{font-size:11px;color:#5f6368;margin-left:4px}</style></head><body><div class="header"><h1>EmmieTech Admin Dashboard</h1><p style="margin:8px 0 0 0;opacity:0.9;">CV Orders & Analytics</p></div><div class="stats"><div class="stat-card"><div class="stat-num">${users.rows[0].total}</div><div class="stat-label">Total Users</div></div><div class="stat-card"><div class="stat-num">${jobs.rows[0].total}</div><div class="stat-label">Active Jobs</div></div><div class="stat-card"><div class="stat-num">${orders.rows.filter(o => o.status === 'paid').length}</div><div class="stat-label">CV Orders Paid</div></div><div class="stat-card"><div class="stat-num">$${(orders.rows.filter(o => o.status === 'paid' && o.stripe_session_id).length * 30) + (orders.rows.filter(o => o.status === 'paid' && o.flutterwave_tx_ref).length * 30)}</div><div class="stat-label">Revenue Est.</div></div></div><h2>Recent CV Orders</h2><table><thead><tr><th>Date</th><th>Customer</th><th>Email</th><th>Phone</th><th>Job Title</th><th>Amount</th><th>Status</th></tr></thead><tbody>${orders.rows.map(o => `<tr><td>${new Date(o.created_at).toLocaleDateString()}</td><td>${o.user_name}</td><td>${o.user_email}</td><td><a href="https://wa.me/${o.user_phone?.replace(/[^0-9]/g,'')}">${o.user_phone}</a></td><td>${o.job_title}</td><td>$${(o.amount/100).toFixed(2)} ${o.flutterwave_tx_ref? '<span class="gateway">(FLW)</span>' : '<span class="gateway">(Stripe)</span>'}</td><td><span class="status-${o.status}">${o.status.toUpperCase()}</span></td></tr>`).join('')}</tbody></table><p style="margin-top:24px;"><a href="/jobs">← Back to Jobs</a> | <a href="/logout">Logout</a></p></body></html>
   `);
 });
 
@@ -1006,3 +989,4 @@ app.get('/logout', (req, res) => {
 app.listen(PORT, () => {
   console.log('EmmieTech Recruitment Agency running on port ' + PORT);
 });
+
