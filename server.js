@@ -261,6 +261,7 @@ async function fetchAdzunaJobs() {
                   job.title,
                   job.company?.display_name || 'Confidential',
                   job.location?.display_name || country.name,
+                  country.name,
                   job.salary_max? `${job.salary_min}-${job.salary_max} ${job.salary_is_predicted? '(est)' : ''}` : 'Competitive',
                   job.category?.label || 'General',
                   job.redirect_url
@@ -528,7 +529,7 @@ app.get('/jobs', requireLogin, async (req, res) => {
     ' <title>EmmieTech Global Recruitment Agency - Jobs</title>' +
     ' <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + ADSENSE_PUBLISHER_ID + '" crossorigin="anonymous"><\/script>' +
     ' <style>' +
-        ' body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; margin: 0; padding: 0; background: #f8f9fa; color: #202124; }' +
+            ' body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; margin: 0; padding: 0; background: #f8f9fa; color: #202124; }' +
     '.header { background: #fff; border-bottom: 1px solid #dadce0; padding: 12px 16px; position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap:8px; }' +
     '.header-left { display: flex; align-items: center; gap: 12px; }' +
     '.logo-circle { width: 52px; height: 52px; border-radius: 50%; overflow: hidden; border: 2px solid #1a73e8; flex-shrink: 0; }' +
@@ -723,7 +724,7 @@ async function handleFlutterwaveCheckout(){
   try{
     const res=await fetch('/api/flutterwave-pay',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jobTitle:'${jobTitle.replace(/'/g, "\\'")}',userEmail:'${userEmail}'})});
     const data=await res.json();
-    if(data.url){window.location.href=data.url}else{alert('Payment error. Please try again.');btn.disabled=false;btn.textContent='Pay with Mobile Money/Card - UGX 114,000'}
+    if(data.link){window.location.href=data.link}else{alert('Payment error. Please try again.');btn.disabled=false;btn.textContent='Pay with Mobile Money/Card - UGX 114,000'}
   }catch(err){alert('Error: '+err.message);btn.disabled=false;btn.textContent='Pay with Mobile Money/Card - UGX 114,000'}
 }
 <\/script></body></html>
@@ -772,10 +773,16 @@ app.post('/api/create-checkout-session', requireLogin, async (req, res) => {
   }
 });
 
-// FLUTTERWAVE ADDED: Create Flutterwave payment link
+// FLUTTERWAVE CORRECTED: Create Flutterwave payment link
 app.post('/api/flutterwave-pay', requireLogin, async (req, res) => {
+  console.log('Flutterwave route hit!');
   const { jobTitle, userEmail } = req.body;
   try {
+    if (!process.env.FLUTTERWAVE_SECRET_KEY) {
+      console.log('ERROR: Secret key missing');
+      return res.status(500).json({ error: 'Secret key not set' });
+    }
+
     const user = await pool.query('SELECT first_name, last_name, phone FROM candidates WHERE id = $1', [req.session.userId]);
     const userData = user.rows[0];
     const txRef = `EMMIETECH-CV-${req.session.userId}-${Date.now()}`;
@@ -804,26 +811,27 @@ app.post('/api/flutterwave-pay', requireLogin, async (req, res) => {
     const response = await fetch("https://api.flutterwave.com/v3/payments", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${FLUTTERWAVE_SECRET_KEY}`,
+        Authorization: `Bearer ${process.env.FLUTTERWAVE_SECRET_KEY}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify(payload)
     });
 
     const data = await response.json();
+    console.log('Flutterwave response:', data);
 
     if (data.status === "success") {
       await pool.query(
         `INSERT INTO cv_orders (user_id, user_email, user_name, user_phone, job_title, flutterwave_tx_ref, amount, status) VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending')`,
         [req.session.userId, userEmail, `${userData.first_name} ${userData.last_name}`, userData.phone, jobTitle, txRef, CV_PRICE_UGX]
       );
-      res.json({ url: data.data.link });
+      res.json({ link: data.data.link });
     } else {
-      res.status(400).json({ error: 'Flutterwave payment init failed' });
+      res.status(400).json({ error: data.message || 'Flutterwave payment init failed' });
     }
   } catch (err) {
-    console.error('Flutterwave error:', err);
-    res.status(500).json({ error: 'Payment failed to initialize' });
+    console.log('Flutterwave crash:', err.message);
+    res.status(500).json({ error: 'Payment error. Please try again.' });
   }
 });
 
@@ -906,7 +914,7 @@ app.get('/cv-success', requireLogin, async (req, res) => {
   }
 
   res.send(`
-<!DOCTYPE html><html><head><title>Payment Successful - EmmieTech</title><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;margin:0;padding:0;background:#f8f9fa;display:flex;align-items:center;justify-content:center;min-height:100vh}.card{background:white;padding:40px;border-radius:16px;box-shadow:0 4px 16px rgba(0,0,0,0.1);max-width:500px;text-align:center}.check{font-size:64px;color:#34a853;margin:0 0 16px 0}h1{color:#1a73e8;margin:0 0 16px 0}p{color:#5f6368;line-height:1.6;margin:0 0 24px 0}.btn{display:inline-block;background:#1a73e8;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600}</style></head><body><div class="card"><div class="check">✓</div><h1>Payment Successful!</h1><p>Thank you! Our CV experts will rewrite your resume for <b>${jobTitle}</b> and email it to you within 48 hours.</p><p>We'll contact you on WhatsApp ${userPhone} if we need more details. Check your email for confirmation.</p><p><small>Reference: ${refId}</small></p><a href="/jobs" class="btn">Back to Jobs</a></div></body></html>
+<!DOCTYPE html><html><head><title>Payment Successful - EmmieTech</title><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;margin:0;padding:0;background:#f8f9fa;display:flex;align-items:center;justify-content:center;min-height:100vh}.card{background:white;padding:40px;border-radius:16px;box-shadow:0 4px 16px rgba(0,0,0,0.1);max-width:500px;text-align:center}.check{font-size:64px;color:#34a853;margin:0 00 16px 0}h1{color:#1a73e8;margin:0 0 16px 0}p{color:#5f6368;line-height:1.6;margin:0 0 24px 0}.btn{display:inline-block;background:#1a73e8;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600}</style></head><body><div class="card"><div class="check">✓</div><h1>Payment Successful!</h1><p>Thank you! Our CV experts will rewrite your resume for <b>${jobTitle}</b> and email it to you within 48 hours.</p><p>We'll contact you on WhatsApp ${userPhone} if we need more details. Check your email for confirmation.</p><p><small>Reference: ${refId}</small></p><a href="/jobs" class="btn">Back to Jobs</a></div></body></html>
   `);
 });
 
