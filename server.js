@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import pkg from 'pg';
 import fetch from 'node-fetch';
 import session from 'express-session';
+import pgSession from 'connect-pg-simple'; // ADDED FOR CHROME
 import * as cheerio from 'cheerio';
 import Stripe from 'stripe';
 import nodemailer from 'nodemailer';
@@ -55,11 +56,25 @@ const pool = new Pool({
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// FIXED FOR CHROME - THIS IS WHY FIREFOX WORKS BUT CHROME DOESN'T
+app.set('trust proxy', 1);
+const PgSession = pgSession(session);
 app.use(session({
-  secret: 'emmietech-recruitment-2026-secret',
+  store: new PgSession({
+    pool: pool,
+    tableName: 'session',
+    createTableIfMissing: true
+  }),
+  secret: process.env.SESSION_SECRET || 'emmietech-recruitment-2026-secret',
   resave: false,
   saveUninitialized: false,
-  cookie: { maxAge: 30 * 24 * 60 * 60 * 1000 }
+  cookie: {
+    maxAge: 30 * 24 * 60 * 60 * 1000,
+    secure: true, // Required for Chrome on HTTPS
+    httpOnly: true,
+    sameSite: 'none' // Required for Chrome on Render
+  }
 }));
 
 pool.query(`
@@ -542,7 +557,6 @@ app.get('/', (req, res) => {
     ' otherInput.required = true;' +
     ' } else {' +
     ' otherGroup.style.display = "none";' +
-    ' otherInput.required = false;' +
     ' otherInput.value = "";' +
     ' }' +
     ' }' +
@@ -567,7 +581,7 @@ app.get('/', (req, res) => {
     ' const confirmPassword = document.getElementById("confirmPassword").value;' +
     ' if (password.length < 6) { document.getElementById("error").style.display = "block"; document.getElementById("error").textContent = "Password must be at least 6 characters"; return; }' +
     ' if (password!== confirmPassword) { document.getElementById("error").style.display = "block"; document.getElementById("error").textContent = "Passwords do not match"; return; }' +
-        ' const countrySelect = document.getElementById("countryInterest").value;' +
+    ' const countrySelect = document.getElementById("countryInterest").value;' +
     ' const finalCountry = countrySelect === "Others"? document.getElementById("otherCountry").value : countrySelect;' +
     ' if (countrySelect === "Others" &&!finalCountry.trim()) { document.getElementById("error").style.display = "block"; document.getElementById("error").textContent = "Please specify your country"; return; }' +
     ' const fullPhone = document.getElementById("countryCode").value + document.getElementById("phone").value;' +
@@ -604,7 +618,7 @@ app.get('/jobs', requireLogin, async (req, res) => {
     ' <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + ADSENSE_PUBLISHER_ID + '" crossorigin="anonymous"><\/script>' +
     ' <style>' +
     ' body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; margin: 0; padding: 0; background: #f8f9fa; color: #202124; }' +
-        '.header { background: #fff; border-bottom: 1px solid #dadce0; padding: 12px 16px; position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap:8px; }' +
+    '.header { background: #fff; border-bottom: 1px solid #dadce0; padding: 12px 16px; position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap:8px; }' +
     '.header-left { display: flex; align-items: center; gap: 12px; }' +
     '.logo-circle { width: 52px; height: 52px; border-radius: 50%; overflow: hidden; border: 2px solid #1a73e8; flex-shrink: 0; }' +
     '.logo-circle img { width: 100%; height: 100%; object-fit: cover; }' +
@@ -641,7 +655,7 @@ app.get('/jobs', requireLogin, async (req, res) => {
     '.cv-btn { background: #fbbc04; color: #202124; }' +
     '.cv-btn:hover { background: #f9ab00; }' +
     '.footer { background: #202124; color: #e8eaed; padding: 40px 20px; margin-top: 60px; text-align: center; }' +
-    '.ad-container { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); text-align: center; min-height: 280px; }' +
+    '.ad-container { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); text-align: center; min-height: 280px; margin: 20px 0; }' +
     '.footer-links { margin-top: 20px; }' +
     '.footer-links a { color: #8ab4f8; text-decoration: none; margin: 0 10px; font-size: 14px; }' +
     '.no-results { text-align: center; padding: 40px; color: #5f6368; }' +
@@ -663,6 +677,10 @@ app.get('/jobs', requireLogin, async (req, res) => {
     ' </div>' +
     ' <div style="background:#fbbc04;color:#202124;padding:12px;text-align:center;font-weight:700;">⚡ 247 people applied to jobs in the last 24 hours. Don\'t miss out!</div>' +
     ' <div class="container">' +
+    ' <div class="ad-container">' +
+    ' <ins class="adsbygoogle" style="display:block" data-ad-client="' + ADSENSE_PUBLISHER_ID + '" data-ad-slot="' + ADSENSE_SLOT_ID + '" data-ad-format="auto" data-full-width-responsive="true"></ins>' +
+    ' <script>(adsbygoogle = window.adsbygoogle || []).push({});<\/script>' +
+    ' </div>' +
     ' <h2 id="jobs" style="margin: 0 0 20px 0;">Active Job Openings</h2>' +
     ' <div class="filters">' +
     ' <select id="countryFilter"><option value="">All Countries</option><option value="Uganda">Uganda</option><option value="UAE">UAE</option><option value="Canada">Canada</option><option value="UK">UK</option><option value="Saudi Arabia">Saudi Arabia</option><option value="Qatar">Qatar</option><option value="USA">USA</option><option value="Australia">Australia</option><option value="Germany">Germany</option></select>' +
@@ -676,6 +694,10 @@ app.get('/jobs', requireLogin, async (req, res) => {
     ' </div>' +
     ' </div>' +
     ' <div id="jobGrid" class="job-grid"><div class="loading">Loading jobs...</div></div>' +
+    ' <div class="ad-container">' +
+    ' <ins class="adsbygoogle" style="display:block" data-ad-client="' + ADSENSE_PUBLISHER_ID + '" data-ad-slot="' + ADSENSE_SLOT_ID + '" data-ad-format="auto" data-full-width-responsive="true"></ins>' +
+    ' <script>(adsbygoogle = window.adsbygoogle || []).push({});<\/script>' +
+    ' </div>' +
     ' </div>' +
     ' <div class="footer">' +
     ' <p><b>EmmieTech Global Recruitment Agency</b></p>' +
@@ -729,11 +751,6 @@ app.get('/jobs', requireLogin, async (req, res) => {
     ' const highPayBadge = isHighPay? `<div class="high-pay-badge">💰 HIGH PAY</div>` : "";' +
     ' const isNew = j.created_at && (new Date - new Date(j.created_at)) < 86400000;' +
     ' const newBadge = isNew? `<div class="new-badge">NEW</div>` : "";' +
-    ' const adCode = index === 2 && ADSENSE_SLOT!== "1234567890"? `' +
-    ' <div class="ad-container">' +
-    ' <ins class="adsbygoogle" style="display:block" data-ad-client="${ADSENSE_CLIENT}" data-ad-slot="${ADSENSE_SLOT}" data-ad-format="auto" data-full-width-responsive="true"></ins>' +
-    ' <script>(adsbygoogle = window.adsbygoogle || []).push({});<\\/script>' +
-    ' </div>` : "";' +
     ' return `' +
     ' <div class="job-card">' +
     ' ${newBadge}${highPayBadge}' +
@@ -744,7 +761,7 @@ app.get('/jobs', requireLogin, async (req, res) => {
     ' <a href="${j.url}" target="_blank" class="apply-btn">Apply via Employer Site</a>' +
     ' <a href="https://wa.me/${WHATSAPP.replace(/[^0-9]/g,\'\')}?text=Hi, I want to apply for: ${encodeURIComponent(j.title)} at ${encodeURIComponent(j.company)}" target="_blank" class="apply-btn whatsapp-btn">Chat on WhatsApp</a>' +
     ' <a href="/cv-service?job=${encodeURIComponent(j.title)}" class="apply-btn cv-btn">🔥 Get CV For This Job - $30</a>' +
-    ' </div>${adCode}`;' +
+    ' </div>`;' +
     ' }).join("");' +
     ' }' +
     ' function filterJobs() {' +
@@ -787,7 +804,7 @@ app.get('/cv-service', requireLogin, async (req, res) => {
   const userEmail = user.rows[0]?.email;
 
   res.send(`
-<!DOCTYPE html><html><head><title>Professional CV Service - EmmieTech</title><meta name="viewport" content="width=device-width, initial-scale=1.0"><script src="https://js.stripe.com/v3/"><\/script><script src="https://checkout.flutterwave.com/v3.js"><\/script><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;margin:0;padding:0;background:#f8f9fa;color:#202124}.header{background:#fff;border-bottom:1px solid #dadce0;padding:12px 16px;display:flex;align-items:center;gap:12px}.logo-circle{width:52px;height:52px;border-radius:50%;overflow:hidden;border:2px solid #1a73e8}.logo-circle img{width:100%;height:100%;object-fit:cover}.container{max-width:700px;margin:40px auto;padding:0 20px}.card{background:white;padding:40px;border-radius:16px;box-shadow:0 4px 16px rgba(0,0,0,0.1)}h1{color:#1a73e8;margin:0 0 8px 0;font-size:28px}.subtitle{color:#5f6368;font-size:16px;margin:0 0 32px 0}.benefits{margin:32px 0}.benefit{display:flex;gap:12px;margin-bottom:16px;align-items:start}.benefit-icon{color:#34a853;font-size:24px;line-height:1}.price-box{background:#e8f0fe;padding:24px;border-radius:12px;text-align:center;margin:32px 0}.price{font-size:48px;font-weight:700;color:#1a73e8;margin:0}.price-desc{color:#5f6368;margin:8px 0 0}.btn{width:100%;background:#1a73e8;color:white;padding:16px;border:none;border-radius:8px;font-weight:600;font-size:18px;cursor:pointer;margin-bottom:12px}.btn:hover{background:#1557b0}.btn:disabled{background:#dadce0;cursor:not-allowed}.btn-flutterwave{background:#f5a623}.btn-flutterwave:hover{background:#e09612}.guarantee{text-align:center;color:#5f6368;font-size:14px;margin-top:16px}.testimonial{background:#f8f9fa;padding:20px;border-radius:12px;margin:32px 0;border-left:4px solid #fbbc04}.back-link{color:#1a73e8;text-decoration:none;font-weight:600}</style></head><body><div class="header"><div class="logo-circle"><img src="${UGANDA_LOGO}" alt="EmmieTech"></div><div><h2 style="margin:0;font-size:18px;color:#1a73e8;">EmmieTech Global</h2></div></div><div class="container"><div class="card"><a href="/jobs" class="back-link">← Back to Jobs</a><h1 style="margin-top:24px;">Land ${jobTitle}</h1><p class="subtitle">Get a professional CV written by recruitment experts. 3x more interview calls guaranteed.</p><div class="benefits"><div class="benefit"><div class="benefit-icon">✓</div><div><b>ATS-Optimized:</b> Pass robot filters used by 90% of employers</div></div><div class="benefit"><div class="benefit-icon">✓</div><div><b>Tailored to Job:</b> We rewrite your CV specifically for ${jobTitle}</div></div><div class="benefit"><div class="benefit-icon">✓</div><div><b>48-Hour Delivery:</b> Get your new CV in 2 days via email</div></div><div class="benefit"><div class="benefit-icon">✓</div><div><b>Unlimited Revisions:</b> We tweak until you’re 100% happy</div></div></div><div class="testimonial"><b>"I got 3 interviews in 1 week after EmmieTech rewrote my CV. Now working in Dubai!"</b><br><span style="color:#5f6368;font-size:14px;">— Sarah N., Kampala → Dubai, UAE</span></div><div class="price-box"><p class="price">$30 / UGX 114,000</p><p class="price-desc">One-time payment • 48hr delivery</p></div><button id="stripeBtn" class="btn" onclick="handleStripeCheckout()">Pay with Card - $30 USD</button><button id="flutterwaveBtn" class="btn btn-flutterwave" onclick="handleFlutterwaveCheckout()">Pay with Mobile Money/Card - UGX 114,000</button><p class="guarantee">🔒 Secure payment • 100% money-back guarantee</p></div></div><script>
+<!DOCTYPE html><html><head><title>Professional CV Service - EmmieTech</title><meta name="viewport" content="width=device-width, initial-scale=1.0"><script src="https://js.stripe.com/v3/"><\/script><script src="https://checkout.flutterwave.com/v3.js"><\/script><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;margin:0;padding:0;background:#f8f9fa;color:#202124}.header{background:#fff;border-bottom:1px solid #dadce0;padding:12px 16px;display:flex;align-items:center;gap:12px}.logo-circle{width:52px;height:52px;border-radius:50%;overflow:hidden;border:2px solid #1a73e8}.logo-circle img{width:100%;height:100%;object-fit:cover}.container{max-width:700px;margin:40px auto;padding:0 20px}.card{background:white;padding:40px;border-radius:16px;box-shadow:0 4px 16px rgba(0,0,0,0.1)}h1{color:#1a73e8;margin:0 0 8px 0;font-size:28px}.subtitle{color:#5f6368;font-size:16px;margin:0 0 32px 0}.benefits{margin:32px 0}.benefit{display:flex;gap:12px;margin-bottom:16px;align-items:start}.benefit-icon{color:#34a853;font-size:24px;line-height:1}.price-box{background:#e8f0fe;padding:24px;border-radius:12px;text-align:center;margin:32px 0}.price{font-size:48px;font-weight:700;color:#1a73e8;margin:0}.price-desc{color:#5f6368;margin:8px 0 0}.btn{width:100%;background:#1a73e8;color:white;padding:16px;border:none;border-radius:8px;font-weight:600;font-size:18px;cursor:pointer;margin-bottom:12px}.btn:hover{background:#1557b0}.btn:disabled{background:#dadce0;cursor:not-allowed}.btn-flutterwave{background:#f5a623}.btn-flutterwave:hover{background:#e09612}.guarantee{text-align:center;color:#5f6368;font-size:14px;margin-top:16px}.testimonial{background:#f8f9fa;padding:20px;border-radius:12px;margin:32px 0;border-left:4px solid #fbbc04}.back-link{color:#1a73e8;text-decoration:none;font-weight:600}</style></head><body><div class="header"><div class="logo-circle"><img src="${UGANDA_LOGO}" alt="EmmieTech"></div><h2 style="margin:0;font-size:18px;color:#1a73e8;">EmmieTech Global</h2></div></div><div class="container"><div class="card"><a href="/jobs" class="back-link">← Back to Jobs</a><h1 style="margin-top:24px;">Land ${jobTitle}</h1><p class="subtitle">Get a professional CV written by recruitment experts. 3x more interview calls guaranteed.</p><div class="benefits"><div class="benefit"><div class="benefit-icon">✓</div><div><b>ATS-Optimized:</b> Pass robot filters used by 90% of employers</div></div><div class="benefit"><div class="benefit-icon">✓</div><div><b>Tailored to Job:</b> We rewrite your CV specifically for ${jobTitle}</div></div><div class="benefit"><div class="benefit-icon">✓</div><div><b>48-Hour Delivery:</b> Get your new CV in 2 days via email</div></div><div class="benefit"><div class="benefit-icon">✓</div><div><b>Unlimited Revisions:</b> We tweak until you’re 100% happy</div></div></div><div class="testimonial"><b>"I got 3 interviews in 1 week after EmmieTech rewrote my CV. Now working in Dubai!"</b><br><span style="color:#5f6368;font-size:14px;">— Sarah N., Kampala → Dubai, UAE</span></div><div class="price-box"><p class="price">$30 / UGX 114,000</p><p class="price-desc">One-time payment • 48hr delivery</p></div><button id="stripeBtn" class="btn" onclick="handleStripeCheckout()">Pay with Card - $30 USD</button><button id="flutterwaveBtn" class="btn btn-flutterwave" onclick="handleFlutterwaveCheckout()">Pay with Mobile Money/Card - UGX 114,000</button><p class="guarantee">🔒 Secure payment • 100% money-back guarantee</p></div></div><script>
 async function handleStripeCheckout(){
   const btn=document.getElementById('stripeBtn');btn.disabled=true;btn.textContent='Redirecting to Stripe...';
   try{
@@ -972,7 +989,7 @@ app.get('/cv-success', requireLogin, async (req, res) => {
     userPhone = session.metadata.userPhone;
     userEmail = session.customer_details.email;
     refId = session_id;
-        await pool.query(`UPDATE cv_orders SET status = 'paid' WHERE stripe_session_id = $1`, [session_id]);
+    await pool.query(`UPDATE cv_orders SET status = 'paid' WHERE stripe_session_id = $1`, [session_id]);
   } else if (gateway === 'flutterwave' && tx_ref) {
     const order = await pool.query(`SELECT * FROM cv_orders WHERE flutterwave_tx_ref = $1`, [tx_ref]);
     if (order.rows.length > 0) {
@@ -999,7 +1016,7 @@ app.get('/admin', requireLogin, async (req, res) => {
   const jobs = await pool.query(`SELECT COUNT(*) as total FROM agency_jobs WHERE status = 'active'`);
 
   res.send(`
-<!DOCTYPE html><html><head><title>EmmieTech Admin</title><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;margin:0;padding:20px;background:#f8f9fa}.header{background:#1a73e8;color:white;padding:20px;border-radius:12px;margin-bottom:20px}h1{margin:0}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}.stat-card{background:white;padding:20px;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.1)}.stat-num{font-size:32px;font-weight:700;color:#1a73e8}.stat-label{color:#5f6368;font-size:14px}table{width:100%;background:white;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1)}th{background:#f8f9fa;padding:12px;text-align:left;font-weight:600;color:#5f6368;font-size:14px}td{padding:12px;border-top:1px solid #f1f3f4;font-size:14px}.status-paid{background:#e6f4ea;color:#137333;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:600}.status-pending{background:#fef7e0;color:#ea8600;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:600}a{color:#1a73e8;text-decoration:none}.gateway{font-size:11px;color:#5f6368;margin-left:4px}</style></head><body><div class="header"><h1>EmmieTech Admin Dashboard</h1><p style="margin:8px 0 0;opacity:0.9;">CV Orders & Analytics</p></div><div class="stats"><div class="stat-card"><div class="stat-num">${users.rows[0].total}</div><div class="stat-label">Total Users</div></div><div class="stat-card"><div class="stat-num">${jobs.rows[0].total}</div><div class="stat-label">Active Jobs</div></div><div class="stat-card"><div class="stat-num">${orders.rows.filter(o => o.status === 'paid').length}</div><div class="stat-label">CV Orders Paid</div></div><div class="stat-card"><div class="stat-num">$${(orders.rows.filter(o => o.status === 'paid' && o.stripe_session_id).length * 30) + (orders.rows.filter(o => o.status === 'paid' && o.flutterwave_tx_ref).length * 30)}</div><div class="stat-label">Revenue Est.</div></div></div><h2>Recent CV Orders</h2><table><thead><tr><th>Date</th><th>Customer</th><th>Email</th><th>Phone</th><th>Job Title</th><th>Amount</th><th>Status</th></tr></thead><tbody>${orders.rows.map(o => `<tr><td>${new Date(o.created_at).toLocaleDateString()}</td><td>${o.user_name}</td><td>${o.user_email}</td><td><a href="https://wa.me/${o.user_phone?.replace(/[^0-9]/g,'')}">${o.user_phone}</a></td><td>${o.job_title}</td><td>$${(o.amount/100).toFixed(2)} ${o.flutterwave_tx_ref? '<span class="gateway">(FLW)</span>' : '<span class="gateway">(Stripe)</span>'}</td><td><span class="status-${o.status}">${o.status.toUpperCase()}</span></td></tr>`).join('')}</tbody></table><p style="margin-top:24px;"><a href="/jobs">← Back to Jobs</a> | <a href="/logout">Logout</a></p></body></html>
+<!DOCTYPE html><html><head><title>EmmieTech Admin</title><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;margin:0;padding:20px;background:#f8f9fa}.header{background:#1a73e8;color:white;padding:20px;border-radius:12px;margin-bottom:20px}h1{margin:0}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}.stat-card{background:white;padding:20px;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.1)}.stat-num{font-size:32px;font-weight:700;color:#1a73e8}.stat-label{color:#5f6368;font-size:14px}table{width:100%;background:white;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1)}th{background:#f8f9fa;padding:12px;text-align:left;font-weight:600;color:#5f6368;font-size:14px}td{padding:12px;border-top:1px solid #f1f3f4;font-size:14px}.status-paid{background:#e6f4ea;color:#137333;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:600}.status-pending{background:#fef7e0;color:#ea8600;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:600}a{color:#1a73e8;text-decoration:none}.gateway{font-size:11px;color:#5f6368;margin-left:4px}</style></head><body><div class="header"><h1>EmmieTech Admin Dashboard</h1><p style="margin:8px 0 0;opacity:0.9;">CV Orders & Analytics</p></div><div class="stats"><div class="stat-card"><div class="stat-num">${users.rows[0].total}</div><div class="stat-label">Total Users</div></div><div class="stat-card"><div class="stat-num">${jobs.rows[0].total}</div><div class="stat-label">Active Jobs</div></div><div class="stat-card"><div class="stat-num">${orders.rows.filter(o => o.status === 'paid').length}</div><div class="stat-label">CV Orders Paid</div></div><div class="stat-card"><div class="stat-num">$${(orders.rows.filter(o => o.status === 'paid' && o.stripe_session_id).length * 30) + (orders.rows.filter(o => o.status === 'paid' && o.flutterwave_tx_ref).length * 30)}</div><div class="stat-label">Revenue Est.</div></div></div><h2>Recent CV Orders</h2><table><thead><tr><th>Date</th><th>Customer</th><th>Email</th><th>Phone</th><th>Job Title</th><th>Amount</th><th>Status</th></tr></thead><tbody>${orders.rows.map(o => `<tr><td>${new Date(o.created_at).toLocaleDateString()}</td><td>${o.user_name}</td><td>${o.user_email}</td><a href="https://wa.me/${o.user_phone?.replace(/[^0-9]/g,'')}">${o.user_phone}</a></td><td>${o.job_title}</td><td>$${(o.amount/100).toFixed(2)} ${o.flutterwave_tx_ref? '<span class="gateway">(FLW)</span>' : '<span class="gateway">(Stripe)</span>'}</td><span class="status-${o.status}">${o.status.toUpperCase()}</span></td></tr>`).join('')}</tbody></table><p style="margin-top:24px;"><a href="/jobs">← Back to Jobs</a> | <a href="/logout">Logout</a></p></body></html>
   `);
 });
 
