@@ -22,8 +22,8 @@ const ADSENSE_PUBLISHER_ID = 'ca-pub-1637256996790764';
 const ADSENSE_SLOT_ID = '1234567890';
 const IPINFO_KEY = process.env.IPINFO_KEY || '';
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'emmietech.recruitment@gmail.com';
-const CV_PRICE_USD = 3000; // $30.00 in cents
-const CV_PRICE_UGX = 114000; // ~$30 in UGX for Flutterwave
+const CV_PRICE_USD = 3000;
+const CV_PRICE_UGX = 114000;
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -296,6 +296,53 @@ function requireLogin(req, res, next) {
   }
 }
 
+app.get('/manifest.json', (req, res) => {
+  res.json({
+    "name": "EmmieTech Global Recruitment",
+    "short_name": "EmmieTech",
+    "description": "High-paying jobs worldwide with visa sponsorship",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#1a73e8",
+    "orientation": "portrait-primary",
+    "icons": [
+      {
+        "src": "https://i.imgur.com/8QfQxXj.png",
+        "sizes": "192x192",
+        "type": "image/png",
+        "purpose": "any maskable"
+      },
+      {
+        "src": "https://i.imgur.com/8QfQxXj.png",
+        "sizes": "512x512",
+        "type": "image/png",
+        "purpose": "any maskable"
+      }
+    ]
+  });
+});
+
+app.get('/sw.js', (req, res) => {
+  res.setHeader('Content-Type', 'application/javascript');
+  res.send(`
+    const CACHE_NAME = 'emmietech-v1';
+    const urlsToCache = ['/', '/jobs'];
+
+    self.addEventListener('install', event => {
+      event.waitUntil(
+        caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
+      );
+    });
+
+    self.addEventListener('fetch', event => {
+      event.respondWith(
+        caches.match(event.request).then(response => response || fetch(event.request))
+      );
+    });
+  `);
+});
+
 app.get('/privacy', (req, res) => {
   res.send(`
 <!DOCTYPE html>
@@ -394,6 +441,9 @@ app.get('/', (req, res) => {
     '<head>' +
     ' <meta charset="UTF-8">' +
     ' <meta name="viewport" content="width=device-width, initial-scale=1.0">' +
+    ' <link rel="manifest" href="/manifest.json">' +
+    ' <meta name="theme-color" content="#1a73e8">' +
+    ' <link rel="apple-touch-icon" href="https://i.imgur.com/8QfQxXj.png">' +
     ' <title>EmmieTech Global Recruitment Agency - Login</title>' +
     ' <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + ADSENSE_PUBLISHER_ID + '" crossorigin="anonymous"><\/script>' +
     ' <style>' +
@@ -517,18 +567,23 @@ app.get('/', (req, res) => {
     ' const confirmPassword = document.getElementById("confirmPassword").value;' +
     ' if (password.length < 6) { document.getElementById("error").style.display = "block"; document.getElementById("error").textContent = "Password must be at least 6 characters"; return; }' +
     ' if (password!== confirmPassword) { document.getElementById("error").style.display = "block"; document.getElementById("error").textContent = "Passwords do not match"; return; }' +
-    ' const countrySelect = document.getElementById("countryInterest").value;' +
+        ' const countrySelect = document.getElementById("countryInterest").value;' +
     ' const finalCountry = countrySelect === "Others"? document.getElementById("otherCountry").value : countrySelect;' +
     ' if (countrySelect === "Others" &&!finalCountry.trim()) { document.getElementById("error").style.display = "block"; document.getElementById("error").textContent = "Please specify your country"; return; }' +
     ' const fullPhone = document.getElementById("countryCode").value + document.getElementById("phone").value;' +
     ' const res = await fetch("/api/register", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({ firstName: document.getElementById("firstName").value, lastName: document.getElementById("lastName").value, email: document.getElementById("regEmail").value, phone: fullPhone, password: password, skills: document.getElementById("skills").value, country_interest: finalCountry }) });' +
     ' const data = await res.json();' +
     ' if (data.success) { document.getElementById("success").style.display = "block"; document.getElementById("success").textContent = "Account created! Logging you in..."; setTimeout(() => window.location.href = "/jobs", 1000); }' +
-      ' else { document.getElementById("error").style.display = "block"; document.getElementById("error").textContent = data.error; }' +
-  ' }' +
-  ' <\/script>' +
-  ' </body>' +
-  ' </html>'
+    ' else { document.getElementById("error").style.display = "block"; document.getElementById("error").textContent = data.error; }' +
+    ' }' +
+    ' if ("serviceWorker" in navigator) {' +
+    ' window.addEventListener("load", () => {' +
+    ' navigator.serviceWorker.register("/sw.js");' +
+    ' });' +
+    ' }' +
+    ' <\/script>' +
+    ' </body>' +
+    ' </html>'
   );
 });
 
@@ -542,6 +597,9 @@ app.get('/jobs', requireLogin, async (req, res) => {
     '<head>' +
     ' <meta charset="UTF-8">' +
     ' <meta name="viewport" content="width=device-width, initial-scale=1.0">' +
+    ' <link rel="manifest" href="/manifest.json">' +
+    ' <meta name="theme-color" content="#1a73e8">' +
+    ' <link rel="apple-touch-icon" href="https://i.imgur.com/8QfQxXj.png">' +
     ' <title>EmmieTech Global Recruitment Agency - Jobs</title>' +
     ' <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + ADSENSE_PUBLISHER_ID + '" crossorigin="anonymous"><\/script>' +
     ' <style>' +
@@ -711,6 +769,11 @@ app.get('/jobs', requireLogin, async (req, res) => {
     ' if (e.key === "Enter") filterJobs();' +
     ' });' +
     ' loadJobs();' +
+    ' if ("serviceWorker" in navigator) {' +
+    ' window.addEventListener("load", () => {' +
+    ' navigator.serviceWorker.register("/sw.js");' +
+    ' });' +
+    ' }' +
     ' <\/script>' +
     ' </body>' +
     ' </html>'
@@ -909,7 +972,7 @@ app.get('/cv-success', requireLogin, async (req, res) => {
     userPhone = session.metadata.userPhone;
     userEmail = session.customer_details.email;
     refId = session_id;
-    await pool.query(`UPDATE cv_orders SET status = 'paid' WHERE stripe_session_id = $1`, [session_id]);
+        await pool.query(`UPDATE cv_orders SET status = 'paid' WHERE stripe_session_id = $1`, [session_id]);
   } else if (gateway === 'flutterwave' && tx_ref) {
     const order = await pool.query(`SELECT * FROM cv_orders WHERE flutterwave_tx_ref = $1`, [tx_ref]);
     if (order.rows.length > 0) {
