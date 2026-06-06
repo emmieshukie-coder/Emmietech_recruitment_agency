@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt';
 import pkg from 'pg';
 import fetch from 'node-fetch';
 import session from 'express-session';
-import pgSession from 'connect-pg-simple'; // ADDED FOR CHROME
+import pgSession from 'connect-pg-simple';
 import * as cheerio from 'cheerio';
 import Stripe from 'stripe';
 import nodemailer from 'nodemailer';
@@ -57,7 +57,6 @@ const pool = new Pool({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// FIXED FOR CHROME - THIS IS WHY FIREFOX WORKS BUT CHROME DOESN'T
 app.set('trust proxy', 1);
 const PgSession = pgSession(session);
 app.use(session({
@@ -71,9 +70,9 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     maxAge: 30 * 24 * 60 * 60 * 1000,
-    secure: true, // Required for Chrome on HTTPS
+    secure: true,
     httpOnly: true,
-    sameSite: 'none' // Required for Chrome on Render
+    sameSite: 'none'
   }
 }));
 
@@ -311,6 +310,95 @@ function requireLogin(req, res, next) {
   }
 }
 
+// ---------- ADSENSE ADS.TXT - CRITICAL FOR APPROVAL ----------
+app.get('/ads.txt', (req, res) => {
+  res.type('text/plain');
+  res.send('google.com, pub-1637256996790764, DIRECT, f08c47fec0942fa0');
+});
+
+// ---------- PUBLIC JOBS PAGE FOR ADSENSE CRAWLER ----------
+app.get('/public-jobs', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT title, company, location, country, salary, category, description, created_at 
+      FROM agency_jobs 
+      WHERE status = 'active' 
+      ORDER BY created_at DESC 
+      LIMIT 20
+    `);
+    
+    const jobs = result.rows;
+    
+    let html = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>EmmieTech Global - International Job Opportunities</title>
+      <meta name="description" content="Browse high-paying jobs worldwide with visa sponsorship. Uganda, UAE, Canada, UK, USA, Germany, Australia.">
+      <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; max-width: 1000px; margin: 0 auto; padding: 20px; background: #f8f9fa; line-height: 1.6; }
+        .header { text-align: center; background: white; padding: 30px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        h1 { color: #1a73e8; margin: 0 0 10px 0; font-size: 28px; }
+        .tagline { color: #5f6368; font-size: 16px; }
+        .job { background: white; padding: 24px; margin-bottom: 16px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .job h3 { color: #1a73e8; margin: 0 0 8px 0; font-size: 20px; }
+        .meta { color: #5f6368; font-size: 14px; margin-bottom: 8px; }
+        .salary { color: #34a853; font-weight: 700; font-size: 16px; margin: 8px 0; }
+        .desc { color: #3c4043; margin: 12px 0; }
+        .badge { display: inline-block; background: #e8f0fe; color: #1967d2; padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 600; }
+        .cta { text-align: center; margin: 30px 0; }
+        .cta a { display: inline-block; background: #1a73e8; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; }
+        .footer { text-align: center; margin-top: 40px; color: #5f6368; font-size: 14px; }
+        .footer a { color: #1a73e8; text-decoration: none; margin: 0 10px; }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <h1>EmmieTech Global Recruitment</h1>
+        <p class="tagline">Licensed Agency | Uganda → Worldwide | High-Paying Jobs With Visa Sponsorship</p>
+        <p><span class="badge">100% Free For Candidates</span> <span class="badge">Visa Support</span></p>
+      </div>
+    `;
+    
+    if (jobs.length === 0) {
+      html += '<div class="job"><p>No jobs available right now. Check back soon or contact us for custom job matching.</p></div>';
+    } else {
+      jobs.forEach(j => {
+        html += `
+        <div class="job">
+          <span class="badge">${j.country}</span>
+          <h3>${j.title}</h3>
+          <div class="meta">${j.company} • ${j.location} • ${j.category}</div>
+          <div class="salary">${j.salary || 'Competitive Salary'}</div>
+          <div class="desc">${j.description ? j.description.substring(0, 200) + '...' : 'Full job details available after registration.'}</div>
+          <div class="meta">Posted: ${new Date(j.created_at).toLocaleDateString()}</div>
+        </div>`;
+      });
+    }
+    
+    html += `
+      <div class="cta">
+        <h3>Want to Apply?</h3>
+        <p>Create a free account to apply for jobs and get CV support</p>
+        <a href="/">Register Free →</a>
+      </div>
+      <div class="footer">
+        <p><b>EmmieTech Global Recruitment Agency</b></p>
+        <p>Licensed by Ministry of Gender, Labour & Social Development, Uganda</p>
+        <p>WhatsApp: ${YOUR_WHATSAPP} | Email: ${ADMIN_EMAIL}</p>
+        <p><a href="/">Home</a> <a href="/about">About</a> <a href="/privacy">Privacy Policy</a></p>
+      </div>
+    </body></html>`;
+    
+    res.send(html);
+  } catch (err) {
+    console.error('Public jobs error:', err);
+    res.status(500).send('Error loading jobs');
+  }
+});
+
 app.get('/manifest.json', (req, res) => {
   res.json({
     "name": "EmmieTech Global Recruitment",
@@ -515,7 +603,7 @@ app.get('/', (req, res) => {
     ' <div class="form-group"><label>First Name</label><input type="text" id="firstName" required></div>' +
     ' <div class="form-group"><label>Last Name</label><input type="text" id="lastName" required></div>' +
     ' <div class="form-group"><label>Email</label><input type="email" id="regEmail" required></div>' +
-    ' <div class="form-group"><label>WhatsApp Number</label><div class="phone-group"><select id="countryCode"><option value="+256">🇺🇬 +256</option><option value="+254">🇰🇪 +254</option><option value="+255">🇹🇿 +255</option><option value="+250">🇷🇼 +250</option><option value="+971">🇦🇪 +971</option><option value="+966">🇸🇦 +966</option><option value="+974">🇶🇦 +974</option><option value="+1">🇨🇦 +1</option><option value="+44">🇬🇧 +44</option><option value="+91">🇮🇳 +91</option><option value="+234">🇳🇬 +234</option><option value="+233">🇬🇭 +233</option><option value="+27">🇿🇦 +27</option></select><input type="tel" id="phone" placeholder="776686096" required></div></div>' +
+        ' <div class="form-group"><label>WhatsApp Number</label><div class="phone-group"><select id="countryCode"><option value="+256">🇺🇬 +256</option><option value="+254">🇰🇪 +254</option><option value="+255">🇹🇿 +255</option><option value="+250">🇷🇼 +250</option><option value="+971">🇦🇪 +971</option><option value="+966">🇸🇦 +966</option><option value="+974">🇶🇦 +974</option><option value="+1">🇨🇦 +1</option><option value="+44">🇬🇧 +44</option><option value="+91">🇮🇳 +91</option><option value="+234">🇳🇬 +234</option><option value="+233">🇬🇭 +233</option><option value="+27">🇿🇦 +27</option></select><input type="tel" id="phone" placeholder="776686096" required></div></div>' +
     ' <div class="form-group"><label>Password</label><div class="password-wrapper"><input type="password" id="regPassword" minlength="6" autocomplete="new-password" required><span class="toggle-password" onclick="togglePassword(\'regPassword\', this)">👁️</span></div><div class="password-hint">Minimum 6 characters</div></div>' +
     ' <div class="form-group"><label>Confirm Password</label><div class="password-wrapper"><input type="password" id="confirmPassword" minlength="6" autocomplete="new-password" required><span class="toggle-password" onclick="togglePassword(\'confirmPassword\', this)">👁️</span></div></div>' +
     ' <div class="form-group"><label>Country Interest</label><select id="countryInterest" onchange="checkOtherCountry()" required><option value="">Select Country</option><option value="🇺🇬 Uganda">🇺🇬 Uganda</option><option value="🇦🇪 UAE">🇦🇪 UAE</option><option value="🇨🇦 Canada">🇨🇦 Canada</option><option value="🇬🇧 UK">🇬🇧 UK</option><option value="🇸🇦 Saudi Arabia">🇸🇦 Saudi Arabia</option><option value="🇶🇦 Qatar">🇶🇦 Qatar</option><option value="🇺🇸 USA">🇺🇸 USA</option><option value="🇦🇺 Australia">🇦🇺 Australia</option><option value="🇩🇪 Germany">🇩🇪 Germany</option><option value="Others">Others</option></select></div>' +
@@ -523,7 +611,7 @@ app.get('/', (req, res) => {
     ' <div class="form-group"><label>Skills</label><input type="text" id="skills" placeholder="e.g. Housekeeping, Security, Nursing" required></div>' +
     ' <button type="submit" class="btn">Create Free Account</button>' +
     ' </form>' +
-    ' <div class="footer-links"><a href="/about">About</a><a href="/privacy">Privacy</a></div>' +
+    ' <div class="footer-links"><a href="/about">About</a><a href="/privacy">Privacy</a><a href="/public-jobs">Jobs</a></div>' +
     ' </div>' +
     ' <script>' +
     ' function togglePassword(fieldId, iconElement) {' +
@@ -703,7 +791,7 @@ app.get('/jobs', requireLogin, async (req, res) => {
     ' <p><b>EmmieTech Global Recruitment Agency</b></p>' +
     ' <p>Kampala, Uganda | WhatsApp: ' + YOUR_WHATSAPP + '</p>' +
     ' <p>Licensed by Ministry of Gender, Labour & Social Development</p>' +
-    ' <div class="footer-links"><a href="/about">About Us</a><a href="/privacy">Privacy Policy</a><a href="/admin">Admin</a></div>' +
+    ' <div class="footer-links"><a href="/about">About Us</a><a href="/privacy">Privacy Policy</a><a href="/public-jobs">Public Jobs</a><a href="/admin">Admin</a></div>' +
     ' </div>' +
     ' <script>' +
     ' const WHATSAPP = "' + YOUR_WHATSAPP + '";' +
@@ -819,7 +907,7 @@ async function handleFlutterwaveCheckout(){
   try{
     const res=await fetch('/api/flutterwave-pay',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({jobTitle:'${jobTitle.replace(/'/g, "\\'")}',userEmail:'${userEmail}'})});
     const data=await res.json();
-    if(data.link){window.location.href=data.link}else{alert('Payment error. Please try again.');btn.disabled=false;btn.textContent='Pay with Mobile Money/Card - UGX 114,000'}
+        if(data.link){window.location.href=data.link}else{alert('Payment error. Please try again.');btn.disabled=false;btn.textContent='Pay with Mobile Money/Card - UGX 114,000'}
   }catch(err){alert('Error: '+err.message);btn.disabled=false;btn.textContent='Pay with Mobile Money/Card - UGX 114,000'}
 }
 <\/script></body></html>
@@ -999,6 +1087,7 @@ app.get('/cv-success', requireLogin, async (req, res) => {
       userPhone = o.user_phone;
       userEmail = o.user_email;
       refId = tx_ref;
+      await pool.query(`UPDATE cv_orders SET status = 'paid' WHERE flutterwave_tx_ref = $1`, [tx_ref]);
     }
   }
 
@@ -1016,7 +1105,7 @@ app.get('/admin', requireLogin, async (req, res) => {
   const jobs = await pool.query(`SELECT COUNT(*) as total FROM agency_jobs WHERE status = 'active'`);
 
   res.send(`
-<!DOCTYPE html><html><head><title>EmmieTech Admin</title><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;margin:0;padding:20px;background:#f8f9fa}.header{background:#1a73e8;color:white;padding:20px;border-radius:12px;margin-bottom:20px}h1{margin:0}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}.stat-card{background:white;padding:20px;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.1)}.stat-num{font-size:32px;font-weight:700;color:#1a73e8}.stat-label{color:#5f6368;font-size:14px}table{width:100%;background:white;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1)}th{background:#f8f9fa;padding:12px;text-align:left;font-weight:600;color:#5f6368;font-size:14px}td{padding:12px;border-top:1px solid #f1f3f4;font-size:14px}.status-paid{background:#e6f4ea;color:#137333;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:600}.status-pending{background:#fef7e0;color:#ea8600;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:600}a{color:#1a73e8;text-decoration:none}.gateway{font-size:11px;color:#5f6368;margin-left:4px}</style></head><body><div class="header"><h1>EmmieTech Admin Dashboard</h1><p style="margin:8px 0 0;opacity:0.9;">CV Orders & Analytics</p></div><div class="stats"><div class="stat-card"><div class="stat-num">${users.rows[0].total}</div><div class="stat-label">Total Users</div></div><div class="stat-card"><div class="stat-num">${jobs.rows[0].total}</div><div class="stat-label">Active Jobs</div></div><div class="stat-card"><div class="stat-num">${orders.rows.filter(o => o.status === 'paid').length}</div><div class="stat-label">CV Orders Paid</div></div><div class="stat-card"><div class="stat-num">$${(orders.rows.filter(o => o.status === 'paid' && o.stripe_session_id).length * 30) + (orders.rows.filter(o => o.status === 'paid' && o.flutterwave_tx_ref).length * 30)}</div><div class="stat-label">Revenue Est.</div></div></div><h2>Recent CV Orders</h2><table><thead><tr><th>Date</th><th>Customer</th><th>Email</th><th>Phone</th><th>Job Title</th><th>Amount</th><th>Status</th></tr></thead><tbody>${orders.rows.map(o => `<tr><td>${new Date(o.created_at).toLocaleDateString()}</td><td>${o.user_name}</td><td>${o.user_email}</td><a href="https://wa.me/${o.user_phone?.replace(/[^0-9]/g,'')}">${o.user_phone}</a></td><td>${o.job_title}</td><td>$${(o.amount/100).toFixed(2)} ${o.flutterwave_tx_ref? '<span class="gateway">(FLW)</span>' : '<span class="gateway">(Stripe)</span>'}</td><span class="status-${o.status}">${o.status.toUpperCase()}</span></td></tr>`).join('')}</tbody></table><p style="margin-top:24px;"><a href="/jobs">← Back to Jobs</a> | <a href="/logout">Logout</a></p></body></html>
+<!DOCTYPE html><html><head><title>EmmieTech Admin</title><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;margin:0;padding:20px;background:#f8f9fa}.header{background:#1a73e8;color:white;padding:20px;border-radius:12px;margin-bottom:20px}h1{margin:0}.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}.stat-card{background:white;padding:20px;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.1)}.stat-num{font-size:32px;font-weight:700;color:#1a73e8}.stat-label{color:#5f6368;font-size:14px}table{width:100%;background:white;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1)}th{background:#f8f9fa;padding:12px;text-align:left;font-weight:600;color:#5f6368;font-size:14px}td{padding:12px;border-top:1px solid #f1f3f4;font-size:14px}.status-paid{background:#e6f4ea;color:#137333;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:600}.status-pending{background:#fef7e0;color:#ea8600;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:600}a{color:#1a73e8;text-decoration:none}.gateway{font-size:11px;color:#5f6368;margin-left:4px}</style></head><body><div class="header"><h1>EmmieTech Admin Dashboard</h1><p style="margin:8px 0 0;opacity:0.9;">CV Orders & Analytics</p></div><div class="stats"><div class="stat-card"><div class="stat-num">${users.rows[0].total}</div><div class="stat-label">Total Users</div></div><div class="stat-card"><div class="stat-num">${jobs.rows[0].total}</div><div class="stat-label">Active Jobs</div></div><div class="stat-card"><div class="stat-num">${orders.rows.filter(o => o.status === 'paid').length}</div><div class="stat-label">CV Orders Paid</div></div><div class="stat-card"><div class="stat-num">$${(orders.rows.filter(o => o.status === 'paid' && o.stripe_session_id).length * 30) + (orders.rows.filter(o => o.status === 'paid' && o.flutterwave_tx_ref).length * 30)}</div><div class="stat-label">Revenue Est.</div></div></div><h2>Recent CV Orders</h2><table><thead><tr><th>Date</th><th>Customer</th><th>Email</th><th>Phone</th><th>Job Title</th><th>Amount</th><th>Status</th></tr></thead><tbody>${orders.rows.map(o => `<tr><td>${new Date(o.created_at).toLocaleDateString()}</td><td>${o.user_name}</td><td>${o.user_email}</td><td><a href="https://wa.me/${o.user_phone?.replace(/[^0-9]/g,'')}">${o.user_phone}</a></td><td>${o.job_title}</td><td>${o.flutterwave_tx_ref? 'UGX ' + o.amount : '$' + (o.amount/100).toFixed(2)} ${o.flutterwave_tx_ref? '<span class="gateway">(FLW)</span>' : '<span class="gateway">(Stripe)</span>'}</td><td><span class="status-${o.status}">${o.status.toUpperCase()}</span></td></tr>`).join('')}</tbody></table><p style="margin-top:24px;"><a href="/jobs">← Back to Jobs</a> | <a href="/logout">Logout</a></p></body></html>
   `);
 });
 
